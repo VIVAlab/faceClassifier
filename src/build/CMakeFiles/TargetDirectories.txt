@@ -1,1 +1,0 @@
-/home/binghao/faceClassifier/src/build/CMakeFiles/run.dir
