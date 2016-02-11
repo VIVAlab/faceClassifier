@@ -10,7 +10,7 @@ Files structure:
               ---test                 test images
               ---weights              weights of each layer
 
-Run **main program**:
+###Run **main program**:
 
 Step 1:
 Open file "..../faceClassifier/src/model.c";
@@ -25,6 +25,7 @@ Step 4:
 If this is the first time you try to run the program, delete all files in folder ***..../faceClassifier/src/build/***;
 
 Step 5:
+
 Open **terminal**, 
 
 **cd ..../faceClassifier/src/build/**,
@@ -37,7 +38,7 @@ Open **terminal**,
 
 
 
-Run **demo**:
+###Run **demo**:
 
 Step 1:
 Open file "..../faceClassifier/demo/model.c";
@@ -52,6 +53,7 @@ Step 4:
 If this is the first time you try to run the program, delete all files in folder ***..../faceClassifier/demo/build/***;
 
 Step 5:
+
 Open **terminal**, 
 
 **cd ..../faceClassifier/demo/build/**,
