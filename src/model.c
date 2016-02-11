@@ -2,7 +2,7 @@
 
 // ***************** parameters settings start *************************
 // path of cnn folder
-const char FILE_PATH[] = "/home/binghao/faceClassifier/";
+const char FILE_PATH[] = "/Users/wbh/faceClassifier/";
 
 // test image path
 const char TEST_IMAGE[] = "test/img/group1.jpg";
@@ -77,7 +77,7 @@ int main(void){
     bool flagStop = false;
 
     // file path
-    char file[50];
+    char file[150];
     strcpy(file, FILE_PATH);
     strcat(file, TEST_IMAGE);
 
