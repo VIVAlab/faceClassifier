@@ -6,39 +6,39 @@
 
 #IncludeRegexTransform: 
 
-/home/binghao/cnn/src/12CLayer.c
+/home/binghao/faceClassifier/src/12CLayer.c
 global.h
-/home/binghao/cnn/src/global.h
+/home/binghao/faceClassifier/src/global.h
 
-/home/binghao/cnn/src/12Layer.c
+/home/binghao/faceClassifier/src/12Layer.c
 global.h
-/home/binghao/cnn/src/global.h
+/home/binghao/faceClassifier/src/global.h
 
-/home/binghao/cnn/src/24CLayer.c
+/home/binghao/faceClassifier/src/24CLayer.c
 global.h
-/home/binghao/cnn/src/global.h
+/home/binghao/faceClassifier/src/global.h
 
-/home/binghao/cnn/src/24Layer.c
+/home/binghao/faceClassifier/src/24Layer.c
 global.h
-/home/binghao/cnn/src/global.h
+/home/binghao/faceClassifier/src/global.h
 
-/home/binghao/cnn/src/48CLayer.c
+/home/binghao/faceClassifier/src/48CLayer.c
 global.h
-/home/binghao/cnn/src/global.h
+/home/binghao/faceClassifier/src/global.h
 
-/home/binghao/cnn/src/48Layer.c
+/home/binghao/faceClassifier/src/48Layer.c
 global.h
-/home/binghao/cnn/src/global.h
+/home/binghao/faceClassifier/src/global.h
 
-/home/binghao/cnn/src/doPyrDown.c
+/home/binghao/faceClassifier/src/doPyrDown.c
 cv.h
 -
 
-/home/binghao/cnn/src/freeArray.c
+/home/binghao/faceClassifier/src/freeArray.c
 stdlib.h
 -
 
-/home/binghao/cnn/src/global.h
+/home/binghao/faceClassifier/src/global.h
 stdlib.h
 -
 stdio.h
@@ -54,29 +54,29 @@ math.h
 unistd.h
 -
 
-/home/binghao/cnn/src/iou.c
+/home/binghao/faceClassifier/src/iou.c
 global.h
-/home/binghao/cnn/src/global.h
+/home/binghao/faceClassifier/src/global.h
 
-/home/binghao/cnn/src/itos.c
+/home/binghao/faceClassifier/src/itos.c
 
-/home/binghao/cnn/src/mergeSort.c
+/home/binghao/faceClassifier/src/mergeSort.c
 global.h
-/home/binghao/cnn/src/global.h
+/home/binghao/faceClassifier/src/global.h
 stdlib.h
 -
 
-/home/binghao/cnn/src/model.c
+/home/binghao/faceClassifier/src/model.c
 global.h
-/home/binghao/cnn/src/global.h
+/home/binghao/faceClassifier/src/global.h
 
-/home/binghao/cnn/src/multiplyByElement.c
+/home/binghao/faceClassifier/src/multiplyByElement.c
 
-/home/binghao/cnn/src/nms.c
+/home/binghao/faceClassifier/src/nms.c
 global.h
-/home/binghao/cnn/src/global.h
+/home/binghao/faceClassifier/src/global.h
 
-/home/binghao/cnn/src/preprocess.c
+/home/binghao/faceClassifier/src/preprocess.c
 math.h
 -
 

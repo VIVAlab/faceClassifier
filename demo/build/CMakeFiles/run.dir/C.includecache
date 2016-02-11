@@ -6,7 +6,39 @@
 
 #IncludeRegexTransform: 
 
-/home/binghao/cnn/demo/global.h
+/home/binghao/faceClassifier/demo/12CLayer.c
+global.h
+/home/binghao/faceClassifier/demo/global.h
+
+/home/binghao/faceClassifier/demo/12Layer.c
+global.h
+/home/binghao/faceClassifier/demo/global.h
+
+/home/binghao/faceClassifier/demo/24CLayer.c
+global.h
+/home/binghao/faceClassifier/demo/global.h
+
+/home/binghao/faceClassifier/demo/24Layer.c
+global.h
+/home/binghao/faceClassifier/demo/global.h
+
+/home/binghao/faceClassifier/demo/48CLayer.c
+global.h
+/home/binghao/faceClassifier/demo/global.h
+
+/home/binghao/faceClassifier/demo/48Layer.c
+global.h
+/home/binghao/faceClassifier/demo/global.h
+
+/home/binghao/faceClassifier/demo/doPyrDown.c
+cv.h
+-
+
+/home/binghao/faceClassifier/demo/freeArray.c
+stdlib.h
+-
+
+/home/binghao/faceClassifier/demo/global.h
 stdlib.h
 -
 stdio.h
@@ -22,9 +54,17 @@ math.h
 unistd.h
 -
 
-/home/binghao/cnn/demo/model.c
+/home/binghao/faceClassifier/demo/itos.c
+
+/home/binghao/faceClassifier/demo/model.c
 global.h
-/home/binghao/cnn/demo/global.h
+/home/binghao/faceClassifier/demo/global.h
+
+/home/binghao/faceClassifier/demo/multiplyByElement.c
+
+/home/binghao/faceClassifier/demo/preprocess.c
+math.h
+-
 
 /usr/local/include/opencv/cv.h
 opencv2/core/core_c.h

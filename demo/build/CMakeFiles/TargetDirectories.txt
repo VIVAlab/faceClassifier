@@ -1,1 +1,1 @@
-/home/binghao/cnn/demo/build/CMakeFiles/run.dir
+/home/binghao/faceClassifier/demo/build/CMakeFiles/run.dir

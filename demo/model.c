@@ -2,7 +2,7 @@
 
 // ***************** parameters settings start *************************
 // home folder
-const char FILE_PATH[] = "/home/binghao/cnn/";
+const char FILE_PATH[] = "/home/binghao/faceClassifier/";
 
 // test image path
 const char TEST_IMAGE[] = "test/img/group1.jpg";
