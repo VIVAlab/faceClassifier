@@ -1,1 +1,0 @@
-/home/binghao/cnn/complete/build/CMakeFiles/run.dir

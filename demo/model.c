@@ -150,9 +150,7 @@ for (loop = 1; loop < loopSize; loop++){
                 int static counter = 0;
                 // 12 calibration
                 if (res > 0.5){
-                    printf("%f, #%d\n", res, counter);
                     counter++;
-                    continue;
 
                     // printf("\n\n---------- face detected at row: %d, col: %d ------------\n\n", row, col);
 
