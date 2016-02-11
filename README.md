@@ -50,7 +50,7 @@ Step 3:
 Step 4:
 In terminal,
 
-**mkdir ..../faceClassifier/src/build/**
+**mkdir ..../faceClassifier/demo/build/**
 
 **cd ..../faceClassifier/demo/build/**
 
