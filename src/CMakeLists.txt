@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 2.8)
+project(run)
+find_package(OpenCV)
+include_directories(${OpenCV_INCLUDE_DIRS})
+add_executable(run model.c 12Layer.c 12CLayer.c 24Layer.c 24CLayer.c 48Layer.c 48CLayer.c global.h itos.c doPyrDown.c preprocess.c freeArray.c multiplyByElement.c mergeSort.c iou.c nms.c)
+target_link_libraries(run ${OpenCV_LIBS})

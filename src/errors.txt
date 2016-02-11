@@ -1,0 +1,4 @@
+segment fault error may due to: 
+    struct Windows window[500];
+
+
