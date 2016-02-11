@@ -1,8 +1,9 @@
 # faceClassifier
 Face Classifier using a cascade of CNNs
 
-Structure:
----faceClassifier
+Files structure:
+
+          ---faceClassifier
               ---demo                 simple demo for illustrating basic idea
               ---preprocess           convert weights from lua file to binary file
               ---src                  main program
@@ -21,13 +22,17 @@ Step 3:
 (optional) Change the test image path **TEST_IMAGE[]** (relative path);
 
 Step 4:
-If this is the first time you try to run the program, delete all files in folder ***..../build***;
+If this is the first time you try to run the program, delete all files in folder ***..../faceClassifier/src/build/***;
 
 Step 5:
 Open **terminal**, 
+
 **cd ..../faceClassifier/src/build/**,
+
 **cmake ..**,
+
 **make**,
+
 **./run**
 
 
@@ -44,11 +49,15 @@ Step 3:
 (optional) Change the test image path **TEST_IMAGE[]** (relative path);
 
 Step 4:
-If this is the first time you try to run the program, delete all files in folder ***..../build***;
+If this is the first time you try to run the program, delete all files in folder ***..../faceClassifier/demo/build/***;
 
 Step 5:
 Open **terminal**, 
+
 **cd ..../faceClassifier/demo/build/**,
+
 **cmake ..**,
+
 **make**,
+
 **./run**
