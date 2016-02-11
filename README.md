@@ -22,17 +22,15 @@ Step 3:
 (optional) Change the test image path **TEST_IMAGE[]** (relative path);
 
 Step 4:
-If this is the first time you try to run the program, delete all files in folder ***..../faceClassifier/src/build/***;
+In terminal,
 
-Step 5:
+**mkdir ..../faceClassifier/src/build/**
 
-Open **terminal**, 
+**cd ..../faceClassifier/src/build/**
 
-**cd ..../faceClassifier/src/build/**,
+**cmake ..**
 
-**cmake ..**,
-
-**make**,
+**make**
 
 **./run**
 
@@ -50,16 +48,14 @@ Step 3:
 (optional) Change the test image path **TEST_IMAGE[]** (relative path);
 
 Step 4:
-If this is the first time you try to run the program, delete all files in folder ***..../faceClassifier/demo/build/***;
+In terminal,
 
-Step 5:
+**mkdir ..../faceClassifier/src/build/**
 
-Open **terminal**, 
+**cd ..../faceClassifier/demo/build/**
 
-**cd ..../faceClassifier/demo/build/**,
+**cmake ..**
 
-**cmake ..**,
-
-**make**,
+**make**
 
 **./run**
