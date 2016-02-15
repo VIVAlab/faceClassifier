@@ -2,7 +2,7 @@
 
 // ***************** parameters settings start *************************
 // path of cnn folder
-const char FILE_PATH[] = "/Users/andres/Documents/Programming/github/faceClassifier/";
+const char FILE_PATH[] = "/Users/wbh/faceClassifier/";
 
 // test image path
 const char TEST_IMAGE[] = "test/img/group1.jpg";
