@@ -13,7 +13,7 @@ float Layer24(float **img, int height, int width, int channels){
 
     // char path[] = "/home/binghao/cnn/24net/24net.bin";
     // char path[] = "/Users/wbh/cnn/24net/24net.bin";
-    char path[50];
+    char path[250];
     strcpy(path, "");
     strcat(path, FILE_PATH);
     strcat(path, "weights/24net.bin");

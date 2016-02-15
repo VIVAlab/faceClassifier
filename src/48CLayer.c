@@ -10,7 +10,7 @@ float* CaliLayer48(float **img, int height, int width, int channels){
     int i, j, k, l;
     float img_segment[5][5];
 
-    char path[50];
+    char path[250];
     strcpy(path, "");
     strcat(path, FILE_PATH);
     strcat(path, "weights/48cnet.bin");

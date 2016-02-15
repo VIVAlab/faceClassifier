@@ -12,7 +12,7 @@ float* CaliLayer12(float **img, int height, int width, int channels){
 
     // char path[] = "/home/binghao/cnn/12cnet/module2.bin";
     // char path[] = "/Users/wbh/cnn/12cnet/module2.bin";
-    char path[50];
+    char path[250];
     strcpy(path, "");
     strcat(path, FILE_PATH);
     strcat(path, "weights/12cnet.bin");

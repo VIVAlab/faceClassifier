@@ -9,7 +9,7 @@ float MultiplyByElement9(float m1[][9][9], float m2[][9][9], int outer_loop);
 float Layer48(float **img, int height, int width, int channels){
     int i, j, k, l;
     float img_segment[5][5];
-    char path[50];
+    char path[250];
     strcpy(path, "");
     strcat(path, FILE_PATH);
     strcat(path, "weights/48net.bin");
