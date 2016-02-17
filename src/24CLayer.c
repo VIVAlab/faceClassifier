@@ -1,10 +1,9 @@
 #include "global.h"
 
 float MultiplyByElement5_(float m1[][5], float m2[][5]);
-
 float MultiplyByElement10(float m1[][10][10], float m2[][10][10], int outer_loop);
 
-float* CaliLayer24(float **img, int height, int width, int channels){
+float* CaliLayer24(float **img, int height, int width, int channels, char *path){
     int i, j, k, l;
     float img_segment[5][5];
     float filter[32][5][5];
@@ -13,10 +12,10 @@ float* CaliLayer24(float **img, int height, int width, int channels){
 
     //char path[] = "/home/binghao/cnn/24cnet/24cnet.bin";
     // char path[] = "/Users/wbh/cnn/24cnet/24cnet.bin";
-    char path[250];
-    strcpy(path, "");
-    strcat(path, FILE_PATH);
-    strcat(path, "weights/24cnet.bin");
+   //  char path[250];
+//     strcpy(path, "");
+//     strcat(path, FILE_PATH);
+//     strcat(path, "weights/24cnet.bin");
 
 
     // char conv_layer_output_path[] = "/home/binghao/cnn/conv_layer_output.txt";

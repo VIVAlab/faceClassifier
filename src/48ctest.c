@@ -20,12 +20,12 @@ const bool flagPrinting = true;
 
 // function declarations
 // layers
-float Layer12(float **img, int width, int height, int channels);
-float* CaliLayer12(float **img, int width, int height, int channels);
-float Layer24(float **img, int width, int height, int channels);
-float* CaliLayer24(float **img, int width, int height, int channels);
-float Layer48(float **img, int width, int height, int channels);
-float* CaliLayer48(float **img, int width, int height, int channels);
+float Layer12(float **img, int width, int height, int channels,char *path);
+float* CaliLayer12(float **img, int width, int height, int channels,char *path);
+float Layer24(float **img, int width, int height, int channels,char *path);
+float* CaliLayer24(float **img, int width, int height, int channels,char *path);
+float Layer48(float **img, int width, int height, int channels,char *path);
+float* CaliLayer48(float **img, int width, int height, int channels,char *path);
 
 // convert numbers from int to char[]
 char* itos(int i, char b[]);

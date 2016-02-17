@@ -1,10 +1,9 @@
 #include "global.h"
 
 float MultiplyByElement3(float m1[][3], float m2[][3]);
-
 float MultiplyByElement5(float m1[][5][5], float m2[][5][5], int outer_loop);
 
-float Layer12(float **img, int height, int width, int channels){
+float Layer12(float **img, int height, int width, int channels, char *path){
     int i, j, k, l;
     float img_segment[3][3];
     float filter[16][3][3];
@@ -13,10 +12,10 @@ float Layer12(float **img, int height, int width, int channels){
 
     //char path[] = "/home/binghao/cnn/12net/module1.bin";
     // char path[] = "/Users/wbh/cnn/12net/module1.bin";
-    char path[250];
-    strcpy(path, "");
-    strcat(path, FILE_PATH);
-    strcat(path, "weights/12net.bin");
+//     char path[250];
+//     strcpy(path, "");
+//     strcat(path, FILE_PATH);
+//     strcat(path, "weights/12net.bin");
 
     // read the weight and bias
     const int Depth = 16;
