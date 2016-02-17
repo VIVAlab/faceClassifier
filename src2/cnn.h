@@ -91,11 +91,6 @@ namespace cnn {
                      OutputArray output,
                      Scalar mean = Scalar::all(0),
                      Scalar stdev=Scalar::all(1));
-    
-    
-    static float fc(InputArrayOfArrays input,
-                    OutputArrayOfArrays weights,
-                    float bias);
         
         
     static void max_pool(InputArray input,
