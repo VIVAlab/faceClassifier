@@ -105,6 +105,7 @@ void network_read(const string &filename, const string &name, const string &ofil
 
 int main(int, char**)
 {
+
         string filename = "/home/binghao/faceClassifier/preprocess/module.bin";
         string ofilename = filename + ".xml";
         string name = "12cnet";
@@ -115,22 +116,6 @@ int main(int, char**)
         fs2["cnn"] >> net;
         cout << net <<endl;
         fs2.release();
-
-
-
-        //    vector<float> input = {1,2,3,4,5};
-//    vector<float> input2 = {6,7,8,9,10};
-//    vector<Mat> a;
-//    a.push_back(Mat(input));
-//    a.push_back(Mat(input2));
-//    Mat tmp;
-//    multiply(a, a, tmp);
-//
-//    cout << tmp <<  endl;
-
-
-
-
 
 
     return 0;

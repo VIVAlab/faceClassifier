@@ -75,6 +75,8 @@ namespace cnn {
 
     static void RELU(InputArrayOfArrays input,
                      OutputArrayOfArrays output);
+    static void SOFTMAC(InputArray input,
+                       OutputArray output);
 
     static void conv(InputArray input,
                      InputArray weights,
@@ -92,12 +94,6 @@ namespace cnn {
                      Scalar mean = Scalar::all(0),
                      Scalar stdev=Scalar::all(1));
 
-
-    static float fc(InputArrayOfArrays input,
-                    OutputArrayOfArrays weights,
-                    float bias);
-
-
     static void max_pool(InputArray input,
                          OutputArray output,
                          int width,
@@ -107,7 +103,7 @@ namespace cnn {
                          int paddingH = 0,
                          int paddingV = 0);
     };
-    
+
 
 
 }
