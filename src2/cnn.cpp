@@ -1,14 +1,14 @@
 /**************************************************************************************************
  **************************************************************************************************
- 
+
  BSD 3-Clause License (https://www.tldrlegal.com/l/bsd3)
- 
+
  Copyright (c) 2016 Andrés Solís Montero <http://www.solism.ca>, All rights reserved.
- 
- 
+
+
  Redistribution and use in source and binary forms, with or without modification,
  are permitted provided that the following conditions are met:
- 
+
  1. Redistributions of source code must retain the above copyright notice,
  this list of conditions and the following disclaimer.
  2. Redistributions in binary form must reproduce the above copyright notice,
@@ -17,7 +17,7 @@
  3. Neither the name of the copyright holder nor the names of its contributors
  may be used to endorse or promote products derived from this software
  without specific prior written permission.
- 
+
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -28,7 +28,7 @@
  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  OF THE POSSIBILITY OF SUCH DAMAGE.
- 
+
  **************************************************************************************************
  **************************************************************************************************/
 
@@ -49,13 +49,13 @@ void Op::CONV(InputArray input,
     {
         output.create(weights.cols(),1 , CV_32F);
     }
-    
+
     for (size_t i = 0; i < weights.cols(); i++)
     {
         conv(input, weights.getMat(i), output.getMatRef(i),
              bias[i], strideH, strideV, paddH, paddV);
     }
-    
+
 }
 void Op::MAX_POOL(InputArrayOfArrays  input,
                      OutputArrayOfArrays output,
@@ -87,9 +87,9 @@ void Op::FC(InputArrayOfArrays input,
     for (size_t i = 0; i < outputs; i++) {
         //o.at<float>(i) = fc(input, weights, bias);
     }
-    
-    
-    
+
+
+
 }
 
 float Op::fc(InputArrayOfArrays input,
@@ -119,7 +119,7 @@ void Op::RELU(InputArrayOfArrays input,
     {
         threshold(input.getMat(i), output.getMatRef(i), 0, 1, THRESH_TOZERO);
     }
-    
+
 }
 
 void Op::conv(InputArray input,
@@ -134,7 +134,7 @@ void Op::conv(InputArray input,
     CV_Assert((input.type()   == CV_32F) &&
               (weights.type() == CV_32F) &&
               (input.channels() == weights.channels()));
-    
+
     Mat border, kernel, convul;
     if (paddingH || paddingV)
     {
@@ -147,18 +147,18 @@ void Op::conv(InputArray input,
     {
         border = input.getMat();
     }
-    
+
     kernel = weights.getMat();
-    
+
     int newWidth = ((input.cols() - weights.cols() + 2*paddingH)/strideH) + 1;
     int newHeight= ((input.rows() - weights.rows() + 2*paddingV)/strideV) + 1;
     output.create(Size(newWidth, newHeight), input.type());
     convul = output.getMat();
-    
+
     int channels = border.channels();
-    
+
     float *rI,*rK,*rO;
-    
+
     for (size_t row = 0; row < newHeight; row+= strideV) //rows
     {
         rI = border.ptr<float>(row);
@@ -167,7 +167,7 @@ void Op::conv(InputArray input,
         {
             size_t inputRealCol = channels * col;
             float sum = 0.f;
-            
+
             for (size_t c  = 0; c  < channels; c++)
             {
                 for (size_t krow = 0; krow < weights.rows(); krow++) //kernel rows
@@ -176,7 +176,7 @@ void Op::conv(InputArray input,
                     for (size_t kcol = 0; kcol < weights.cols(); kcol++) //kernel columns
                     {
                         sum += rI[inputRealCol + c] * rK[channels * kcol + c];
-                        
+
                     }
                 }
             }
@@ -184,7 +184,7 @@ void Op::conv(InputArray input,
             rO[col] = sum;
         }
     }
-    
+
 }
 
 void Op::relu(InputArray input, OutputArray output)
@@ -199,7 +199,7 @@ void Op::norm(InputArray input,
 {
     Scalar _mean, _stdev;
     meanStdDev(input, _mean, _stdev);
-    
+
     vector<Mat> layers;
     split(input, layers);
     for (size_t l = 0; l < layers.size(); l++)
@@ -220,7 +220,7 @@ void Op::max_pool(InputArray input,
                      int paddingV)
 {
     CV_Assert(input.channels() == 1 && input.type() == CV_32F);
-    
+
     Mat border, pooling;
     if (paddingH || paddingV)
     {
@@ -233,16 +233,16 @@ void Op::max_pool(InputArray input,
     {
         border = input.getMat();
     }
-    
+
     int newWidth = ((input.cols() - width  + 2*paddingH)/strideH) + 1;
     int newHeight= ((input.rows() - height + 2*paddingV)/strideV) + 1;
-    
+
     output.create(Size(newWidth, newHeight), input.type());
     pooling = output.getMat();
-    
-    
+
+
     float *rI,*rO;
-    
+
     for (size_t row = 0; row < newHeight; row+= strideV) //rows
     {
         rI = border.ptr<float>(row);
@@ -250,7 +250,7 @@ void Op::max_pool(InputArray input,
         for (size_t col = 0; col < newWidth; col+= strideH) //columns
         {
             float max = rI[col];
-            
+
             for (size_t prow = 0; prow < height; prow++) //kernel rows
             {
                 rI = border.ptr<float>(row + prow);
@@ -258,14 +258,12 @@ void Op::max_pool(InputArray input,
                 {
                     if (rI[pcol] > max)
                         max = rI[pcol];
-                    
+
                 }
             }
-            
+
             rO[col] = max;
         }
     }
-    
+
 }
-
-

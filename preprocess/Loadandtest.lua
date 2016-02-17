@@ -2,21 +2,20 @@ require 'nn'
 require 'nnx'
 require 'image'
 require 'torch'
-require 'cutorch'
-local filename = '/home/binghao/cnn/48cnet/singletest/test.jpg'
+local filename = '/home/binghao/faceClassifier/test/1/0_1_111.jpg'
 -- local filename ='/Users/wbh/cnn/resize/img/2.jpg'
 -- local filename ='/Users/wbh/cnn/test/c_faces/pic00001.jpg'
 --local filename ='/Users/wbh/cnn/test/nonfaces/40009.jpg'
 --local filename = '/Users/wbh/cnn/src/3.jpg'
 local im =  image.load(filename):float()
-im=image.scale(im,48,48)
+im=image.scale(im,12,12)
 --image.save('/home/binghao/cnn/24net/singletest/test.jpg', im)
 local imean=im:mean()
 local istd=im:std()
 im:add(-imean)
 im:div(istd)
 torch.setdefaulttensortype('torch.FloatTensor')
-network1 = torch.load('/home/binghao/cnnNets/48c.net')
+network1 = torch.load('/home/binghao/faceClassifier/weights/12net.bin')
 -- network1 = torch.load('/Users/wbh/cnn/12cnet/model.net')
 
 network1:float()
@@ -29,8 +28,6 @@ net12:add(network1.modules[5])
 net12:add(network1.modules[6])
 net12:add(network1.modules[7])
 net12:add(network1.modules[8])
-net12:add(network1.modules[9])
-net12:add(network1.modules[10])
 
 --net12:add(network1.modules[11])
 --net12:add(network1.modules[12])

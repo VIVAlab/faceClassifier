@@ -164,6 +164,8 @@ float Layer12(float **img, int height, int width, int channels, char *path){
     output8[1] = b - logsum;
     out[0] = expf(output8[0]);
     out[1] = expf(output8[1]);
+    printf("%f\n", out[0]);
+    exit(0);
 
     /* write results into a file
     FILE *ffp = fopen(pooling_output_path,"w");
