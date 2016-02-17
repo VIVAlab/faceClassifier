@@ -196,6 +196,22 @@ void Op::relu(InputArray input, OutputArray output)
     threshold(input, output, 0, 1, THRESH_TOZERO);
 }
 
+void Op::SOFTMAC(InputArray input,
+                 OutputArray output)
+{
+    output.create(input.size(), CV_32F);
+    Mat _input = input.getMat();
+    
+    double _min, _max;
+    cv::minMaxLoc(_input, &_min, &_max);
+    
+    Mat _output= output.getMat();
+    _output = _input - _max;
+    double _sum = sum(_output).val[0];
+    _output = _output / _sum;
+    
+}
+
 void Op::norm(InputArray input,
                  OutputArray output,
                  Scalar mean,
