@@ -100,6 +100,49 @@ void Layer::read(const FileNode& node)
     
 }
 
+
+void CNN::forward(InputArray input, OutputArray output)
+{
+    for (auto net : _network)
+    {
+        Layer &layer = _layers[_map[net]];
+        
+        InputArray _input = (output.empty())? input: output;
+        
+        if (layer.type == cnn::CNNOpType::CONV)
+        {
+            cnn::Op::CONV(_input, layer.weights, output, layer.bias,
+                          layer.params[cnn::CNNParam::StrideW],
+                          layer.params[cnn::CNNParam::StrideH],
+                          layer.params[cnn::CNNParam::PadW],
+                          layer.params[cnn::CNNParam::PadH]);
+        }
+        else if (layer.type == cnn::CNNOpType::RELU)
+        {
+            cnn::Op::RELU(_input, output);
+        }
+        else if (layer.type == cnn::CNNOpType::SOFTMAC)
+        {
+            cnn::Op::SOFTMAC(_input, output);
+        }
+        else if (layer.type == cnn::CNNOpType::NORM)
+        {
+            cnn::Op::norm(_input, output);
+        }
+        else if (layer.type == cnn::CNNOpType::MAXPOOL)
+        {
+            cnn::Op::MAX_POOL(_input, output,
+                              layer.params[cnn::CNNParam::KernelW],
+                              layer.params[cnn::CNNParam::KernelH],
+                              layer.params[cnn::CNNParam::StrideW],
+                              layer.params[cnn::CNNParam::StrideH],
+                              layer.params[cnn::CNNParam::PadW],
+                              layer.params[cnn::CNNParam::PadH]);
+        }
+    }
+}
+
+
 string CNN::generateLayerName(const string &type)
 {
     size_t layerN = _layers.size();
@@ -161,23 +204,19 @@ void CNN::read(const FileNode &node)
     }
 }
 
-Ptr<CNN> CNN::loadCNNFromFile(const string& filename)
-{
-    Ptr<CNN> tmp = new CNN("");
-    FileStorage fs(filename, FileStorage::READ);
-    fs[CNNLabel::NAME] >> *tmp;
-    fs.release();
-    return tmp;
-}
-
-void CNN::writeCNNToFile(const CNN &cnn, const string &filename)
+void CNN::save(const string &filename)
 {
     FileStorage fs(filename, FileStorage::WRITE);
-    fs << CNNLabel::NAME << cnn;
+    fs << CNNLabel::CNN << *this;
     fs.release();
 }
 
-
+void CNN::load(const string &filename)
+{
+    FileStorage fs(filename, FileStorage::READ);
+    fs[cnn::CNNLabel::CNN] >> *this;
+    fs.release();
+}
 
 ostream& cnn::operator<<(ostream &out, const Layer& w)
 {

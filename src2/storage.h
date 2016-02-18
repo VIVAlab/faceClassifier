@@ -36,6 +36,7 @@
 #define __storage__
 
 #include "opencv2/opencv.hpp"
+#include "cnn.h"
 
 using namespace cv;
 using namespace std;
@@ -108,9 +109,13 @@ namespace cnn {
 
         void write(FileStorage &fs) const;
         void read(const FileNode &node);
+        
+        void forward(InputArray input, OutputArray output);
 
-        static Ptr<CNN> loadCNNFromFile(const string& filename);
-        static void writeCNNToFile(const CNN &cnn, const string &filename);
+        void load(const string &filename);
+        void save(const string &filename);
+        
+        
         friend ostream& operator<<(ostream &out, const CNN& w);
     };
 

@@ -48,24 +48,26 @@ namespace cnn {
     {
 
     public:
+        
+
 
     static void CONV(InputArray input,
                      InputArrayOfArrays weights,
                      OutputArrayOfArrays output,
                      vector<float> bias,
+                     int strideW,
                      int strideH,
-                     int strideV,
-                     int paddH,
-                     int paddV );
+                     int paddW,
+                     int paddH );
 
     static void MAX_POOL(InputArrayOfArrays  input,
                          OutputArrayOfArrays output,
                          int width,
                          int height,
+                         int strideW ,
                          int strideH ,
-                         int strideV ,
-                         int paddingH ,
-                         int paddingV);
+                         int paddingW ,
+                         int paddingH);
 
     static void FC(InputArrayOfArrays input,
                    InputArrayOfArrays weights,
@@ -82,10 +84,10 @@ namespace cnn {
                      InputArray weights,
                      OutputArray output,
                      float bias = 0,
+                     int strideW = 1,
                      int strideH = 1,
-                     int strideV = 1,
-                     int paddingH = 0,
-                     int paddingV = 0 );
+                     int paddingW = 0,
+                     int paddingH = 0 );
 
     static void relu(InputArray input, OutputArray output);
 
@@ -98,10 +100,10 @@ namespace cnn {
                          OutputArray output,
                          int width,
                          int height,
-                         int strideH = 1 ,
-                         int strideV = 1,
-                         int paddingH = 0,
-                         int paddingV = 0);
+                         int strideW = 1 ,
+                         int strideH = 1,
+                         int paddingW = 0,
+                         int paddingH = 0);
     };
 
 
