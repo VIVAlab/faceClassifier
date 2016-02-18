@@ -30,69 +30,58 @@ void network_read(const string &filename, const string &name, const string &ofil
     cnn::CNN net(name);
 
     cnn::Layer module1, module2, module3, module4, module5, module6, module7;
-    module1.type =  "conv";
-    module1.name =  name + module1.type;
+    module1.type =  cnn::CNNOpType::CONV;
 
     ifstream f(filename, ios::in | ios::binary);
 
     readMats(16, 3,3,1, f, module1.weights);
     readVector(16, f, module1.bias);
 
-    module1.setParam(cnn::OPTION::HORIZONTAL_PADDING, 0);
-    module1.setParam(cnn::OPTION::VERTICAL_PADDING,   0);
-    module1.setParam(cnn::OPTION::HORIZONTAL_STRIDE, 1);
-    module1.setParam( cnn::OPTION::VERTICAL_STRIDE,  1);
-    module1.setParam(cnn::OPTION::KERNEL_WIDTH, 3);
-    module1.setParam(cnn::OPTION::KERNEL_HEIGHT,3);
+    module1.setParam(cnn::CNNParam::PadH, 0);
+    module1.setParam(cnn::CNNParam::PadW,   0);
+    module1.setParam(cnn::CNNParam::StrideW, 1);
+    module1.setParam(cnn::CNNParam::StrideH,  1);
+    module1.setParam(cnn::CNNParam::KernelH, 3);
+    module1.setParam(cnn::CNNParam::KernelW,3);
 
     net.addLayer(module1);
 
-    module2.type = "maxpool";
-    module2.name = name + module2.type;
-    module2.setParam(cnn::OPTION::HORIZONTAL_PADDING, 1);
-    module2.setParam(cnn::OPTION::VERTICAL_PADDING,   1);
-    module2.setParam(cnn::OPTION::HORIZONTAL_STRIDE, 2);
-    module2.setParam(cnn::OPTION::VERTICAL_STRIDE,  2);
-    module2.setParam(cnn::OPTION::KERNEL_WIDTH, 3);
-    module2.setParam(cnn::OPTION::KERNEL_HEIGHT,3);
+    module2.type = cnn::CNNOpType::MAXPOOL;
+    module2.setParam(cnn::CNNParam::PadH, 1);
+    module2.setParam(cnn::CNNParam::PadW,   1);
+    module2.setParam(cnn::CNNParam::StrideH, 2);
+    module2.setParam(cnn::CNNParam::StrideW,  2);
+    module2.setParam(cnn::CNNParam::KernelW, 3);
+    module2.setParam(cnn::CNNParam::KernelH,3);
 
     net.addLayer(module2);
 
-    module3.type = "relu";
-    module3.name = name + module3.type;
+    module3.type = cnn::CNNOpType::RELU;
 
     net.addLayer(module3);
 
-    module4.type = "fc";
-    module4.name = name + module4.type;
+    module4.type = cnn::CNNOpType::FC;
 
     readMats(16, 5,5,16, f, module4.weights);
     readVector(16, f, module4.bias);
 
-    module4.setParam(cnn::OPTION::HORIZONTAL_PADDING, 1);
-    module4.setParam(cnn::OPTION::VERTICAL_PADDING,   1);
-    module4.setParam(cnn::OPTION::HORIZONTAL_STRIDE, 2);
-    module4.setParam(cnn::OPTION::VERTICAL_STRIDE,  2);
-    module4.setParam(cnn::OPTION::KERNEL_WIDTH, 3);
-    module4.setParam(cnn::OPTION::KERNEL_HEIGHT,3);
-
+    module4.setParam(cnn::CNNParam::PadH, 1);
+    module4.setParam(cnn::CNNParam::PadW,   1);
+    module4.setParam(cnn::CNNParam::StrideH, 2);
+    module4.setParam(cnn::CNNParam::StrideW,  2);
+    module4.setParam(cnn::CNNParam::KernelW, 3);
+    module4.setParam(cnn::CNNParam::KernelH,3);
     net.addLayer(module4);
 
-    module5.type = "relu";
-    module5.name = name + module5.type;
-
+    module5.type = cnn::CNNOpType::RELU;
     net.addLayer(module5);
 
-    module6.type = "fc";
-    module6.name = name + module6.type + to_string(2);
+    module6.type = cnn::CNNOpType::FC;
     readMats(2, 16,1,1, f, module6.weights);
     readVector(2, f, module6.bias);
-
     net.addLayer(module6);
 
-    module7.type = "softmax";
-    module7.name = name + module7.type;
-
+    module7.type = cnn::CNNOpType::SOFTMAC;
     net.addLayer(module7);
 
     f.close();

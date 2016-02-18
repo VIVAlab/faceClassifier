@@ -26,7 +26,7 @@ FILE(GLOB resources
   "*.*"
 )
 
-ADD_EXECUTABLE(${PROJECT_NAME} main.cpp storage.h storage.cpp )
+ADD_EXECUTABLE(${PROJECT_NAME} ${files} )
 TARGET_LINK_LIBRARIES( ${PROJECT_NAME} ${OpenCV_LIBS} )
 
 #LIST(REMOVE_ITEM resources ${files} ${hidden} "${CMAKE_SOURCE_DIR}/CMakeLists.txt")

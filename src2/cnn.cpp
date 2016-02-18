@@ -155,8 +155,9 @@ void Op::conv(InputArray input,
 
     kernel = weights.getMat();
 
-    int newWidth = ((input.cols() - weights.cols() + 2*paddingH)/strideH) + 1;
-    int newHeight= ((input.rows() - weights.rows() + 2*paddingV)/strideV) + 1;
+
+    int newWidth = ((border.cols - kernel.cols)/strideH) + 1;
+    int newHeight= ((border.rows - kernel.rows)/strideV) + 1;
     output.create(Size(newWidth, newHeight), input.type());
     convul = output.getMat();
 
@@ -175,10 +176,10 @@ void Op::conv(InputArray input,
 
             for (size_t c  = 0; c  < channels; c++)
             {
-                for (size_t krow = 0; krow < weights.rows(); krow++) //kernel rows
+                for (size_t krow = 0; krow < kernel.rows; krow++) //kernel rows
                 {
                     rK = kernel.ptr<float>(krow);
-                    for (size_t kcol = 0; kcol < weights.cols(); kcol++) //kernel columns
+                    for (size_t kcol = 0; kcol < kernel.cols; kcol++) //kernel columns
                     {
                         sum += rI[inputRealCol + c] * rK[channels * kcol + c];
 
@@ -255,8 +256,8 @@ void Op::max_pool(InputArray input,
         border = input.getMat();
     }
 
-    int newWidth = ((input.cols() - width  + 2*paddingH)/strideH) + 1;
-    int newHeight= ((input.rows() - height + 2*paddingV)/strideV) + 1;
+    int newWidth = ((border.cols - width )/strideH) + 1;
+    int newHeight= ((border.rows - height)/strideV) + 1;
 
     output.create(Size(newWidth, newHeight), input.type());
     pooling = output.getMat();

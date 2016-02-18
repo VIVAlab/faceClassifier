@@ -41,29 +41,52 @@ using namespace cv;
 using namespace std;
 
 namespace cnn {
-
-    enum class OPTION: int {HORIZONTAL_PADDING, VERTICAL_PADDING, HORIZONTAL_STRIDE, VERTICAL_STRIDE, KERNEL_WIDTH, KERNEL_HEIGHT};
-
+    
+    struct CNNLabel
+    {
+        const static string NAME;
+        const static string PARAMS;
+        const static string WEIGHTS;
+        const static string LAYERS;
+        const static string BIAS;
+        const static string TYPE;
+        const static string NETWORK;
+        const static string CNN;
+    };
+    
+    struct CNNParam
+    {
+        const static string PadH;
+        const static string PadW;
+        const static string StrideH;
+        const static string StrideW;
+        const static string KernelW;
+        const static string KernelH;
+    };
+    
+    
+    struct CNNOpType
+    {
+        const static string CONV;
+        const static string RELU;
+        const static string NORM;
+        const static string SOFTMAC;
+        const static string MAXPOOL;
+        const static string FC;
+    };
+    
     struct Layer
     {
-    private:
-        static string NAME;
-        static string PARAMS;
-        static string PARAM;
-        static string WEIGHTS;
-        static string BIAS;
-        static string TYPE;
     public:
         Layer(){};
-
-        string name;
-        string type;
-        vector<Mat>     weights;
-        vector<float>   bias;
-        map<int,float> params;
-
+        string            type;
+        map<string,float> params;
+        
+        vector<Mat>       weights;
+        vector<float>     bias;
+        
         void write(FileStorage &fs) const;
-        void setParam(OPTION param, float value);
+        void setParam(const string &param, float value);
         void read(const FileNode& node);
         friend ostream& operator<<(ostream &out, const Layer& w);
     };
@@ -73,11 +96,11 @@ namespace cnn {
     private:
         string _name;
         map<string,size_t> _map;
-        vector<Layer> _layers;
-        vector<string> _network;
-        static string NAME;
-        static string LAYERS;
-        static string NETWORK;
+        vector<Layer>      _layers;
+        vector<string>     _network;
+        
+        string generateLayerName(const string &type);
+        
     public:
         CNN(const string &name = ""): _name(name){};
         Layer& getLayer(const string &name);
