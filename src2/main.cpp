@@ -9,8 +9,8 @@ using namespace std;
 
 void readMats(size_t amount, size_t rows, size_t cols, size_t depth, ifstream &f, vector<Mat> &mats)
 {
-    Ptr<float> buffer = new float[amount*depth*rows*cols];
-    f.read((char*)((float*)buffer), amount*rows*cols*depth*sizeof(float));
+    vector<float> buffer(amount*depth*rows*cols);
+    f.read(reinterpret_cast<char*>(&buffer[0]), amount*rows*cols*depth*sizeof(float));
     mats.resize(amount * depth);
     for (size_t i = 0; i < amount; i++)
     {
