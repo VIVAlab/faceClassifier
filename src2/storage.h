@@ -76,10 +76,10 @@ namespace cnn {
         const static string FC;
     };
     
-    struct Layer
+    struct CNNLayer
     {
     public:
-        Layer(){};
+        CNNLayer(){};
         string            type;
         map<string,float> params;
         
@@ -89,23 +89,23 @@ namespace cnn {
         void write(FileStorage &fs) const;
         void setParam(const string &param, float value);
         void read(const FileNode& node);
-        friend ostream& operator<<(ostream &out, const Layer& w);
+        friend ostream& operator<<(ostream &out, const CNNLayer& w);
     };
 
     struct CNN
     {
     private:
-        string _name;
+        string             _name;
         map<string,size_t> _map;
-        vector<Layer>      _layers;
+        vector<CNNLayer>   _layers;
         vector<string>     _network;
         
         string generateLayerName(const string &type);
         
     public:
         CNN(const string &name = ""): _name(name){};
-        Layer& getLayer(const string &name);
-        Layer& addLayer(const Layer &layer);
+        CNNLayer& getLayer(const string &name);
+        CNNLayer& addLayer(const CNNLayer &layer);
 
         void write(FileStorage &fs) const;
         void read(const FileNode &node);
@@ -119,7 +119,7 @@ namespace cnn {
         friend ostream& operator<<(ostream &out, const CNN& w);
     };
 
-    static void write(FileStorage& fs, const string&, const Layer& x)
+    static void write(FileStorage& fs, const string&, const CNNLayer& x)
     {
         x.write(fs);
     }
@@ -127,7 +127,7 @@ namespace cnn {
     {
         x.write(fs);
     }
-    static void read(const FileNode &node, Layer& x, const cnn::Layer &default_value = cnn::Layer())
+    static void read(const FileNode &node, CNNLayer& x, const cnn::CNNLayer &default_value = cnn::CNNLayer())
     {
         if (node.empty())
             x = default_value;
@@ -141,8 +141,28 @@ namespace cnn {
         else
             x.read(node);
     }
-    ostream& operator<<(ostream &out, const Layer& w);
+    ostream& operator<<(ostream &out, const CNNLayer& w);
     ostream& operator<<(ostream &out, const CNN& w);
+    
+    template<class T> ostream& operator<<(ostream &out, const vector<T> &vec)
+    {
+        for (size_t i = 0; i < vec.size(); i++)
+        {
+            out << vec[i] << ((i == vec.size()-1)?"":" -1");
+        }
+        return out;
+    }
+    
+    
+    template<class K, class V> ostream& operator<<(ostream &out, const map<K,V> &m)
+    {
+        size_t count = 0;
+        for (typename map<K,V>::const_iterator it = m.begin(); it!= m.end(); it++, count++)
+        {
+            out << it->first << ": " << it->second << ((count<m.size())? ", ": "");
+        }
+        return out;
+    }
 }
 
 #endif

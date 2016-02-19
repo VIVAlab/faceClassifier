@@ -28,11 +28,11 @@ const string CNNOpType::SOFTMAC = "softmac";
 const string CNNOpType::MAXPOOL = "maxpool";
 const string CNNOpType::FC      = "fc";
 
-void Layer::setParam(const string &param, float value)
+void CNNLayer::setParam(const string &param, float value)
 {
     params[param] = value;
 }
-void Layer::write(FileStorage &fs) const
+void CNNLayer::write(FileStorage &fs) const
 {
     fs << "{";
     fs << CNNLabel::TYPE    <<  type;
@@ -57,7 +57,7 @@ void Layer::write(FileStorage &fs) const
     fs <<"}";
     
 }
-void Layer::read(const FileNode& node)
+void CNNLayer::read(const FileNode& node)
 {
     weights.clear();
     bias.clear();
@@ -105,7 +105,7 @@ void CNN::forward(InputArray input, OutputArray output)
 {
     for (auto net : _network)
     {
-        Layer &layer = _layers[_map[net]];
+        CNNLayer &layer = _layers[_map[net]];
         
         InputArray _input = (output.empty())? input: output;
         
@@ -151,12 +151,12 @@ string CNN::generateLayerName(const string &type)
 }
 
 
-Layer& CNN::getLayer(const string &name)
+CNNLayer& CNN::getLayer(const string &name)
 {
     return _layers[_map.at(name)];
 }
 
-Layer& CNN::addLayer(const Layer &layer)
+CNNLayer& CNN::addLayer(const CNNLayer &layer)
 {
     size_t layerN = _layers.size();
     string name   = generateLayerName(layer.type);
@@ -197,7 +197,7 @@ void CNN::read(const FileNode &node)
         FileNodeIterator it = n.begin(), end = n.end();
         for (; it != end; it++)
         {
-            Layer tmp;
+            CNNLayer tmp;
             *it >> tmp;
             addLayer(tmp);
         }
@@ -218,15 +218,15 @@ void CNN::load(const string &filename)
     fs.release();
 }
 
-ostream& cnn::operator<<(ostream &out, const Layer& w)
+
+
+ostream& cnn::operator<<(ostream &out, const CNNLayer& w)
 {
     out << "{ "<< endl;
     out << "\t" << CNNLabel::TYPE << ": " << w.type << endl;
     if (w.bias.size())
     {
-        cout << "\t" << CNNLabel::BIAS << ": (" << w.bias.size() << ") [";
-        for (size_t i = 0; i < w.bias.size(); i++)
-            out << w.bias[i] << ((i!=w.bias.size()-1)?", ":"");
+        cout << "\t" << CNNLabel::BIAS << ": (" << w.bias.size() << ") [" << w.bias;
         out << "]" << endl;
     }
     if (w.weights.size())
@@ -243,10 +243,7 @@ ostream& cnn::operator<<(ostream &out, const Layer& w)
     }
     if (w.params.size())
     {
-        out << "\t" << CNNLabel::PARAMS << "[";
-        for (std::map<string,float>::const_iterator it=w.params.begin(); it!=w.params.end(); ++it)
-            cout << it->first <<": "<< it->second << ((it!=(--w.params.end()))?", ":"");
-        out << "]" << endl;
+        out << "\t" << CNNLabel::PARAMS << "[" << w.params << "]" << endl;
     }
     out << "}" << endl;
     
@@ -254,22 +251,8 @@ ostream& cnn::operator<<(ostream &out, const Layer& w)
 }
 ostream& cnn::operator<<(ostream &out, const CNN& w)
 {
-    cout << CNNLabel::NAME << ": \t\t" << w._name << endl;
-    cout << CNNLabel::NETWORK << ": \t";
-    for (size_t i = 0; i < w._network.size(); i++)
-    {
-        out << w._network[i] << ((i<w._network.size()-1)?" -> ":"") ;
-    }
-    out << endl;
-    out << CNNLabel::LAYERS << ": \t[" << endl;
-    for (size_t i = 0; i < w._layers.size(); i++)
-    {
-        out <<  w._layers[i];
-        if (i != w._layers.size()- 1)
-        {
-            out << ", " << endl;
-        }
-    }
-    out << "]" << endl;
+    cout << CNNLabel::NAME    << ": \t\t"<< w._name << endl;
+    cout << CNNLabel::NETWORK << ": \t"  << w._network << endl;
+    cout << CNNLabel::LAYERS  << ": \t[" << w._layers << "]" << endl;
     return out;
 }
