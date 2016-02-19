@@ -23,7 +23,7 @@ const string CNNParam::KernelH = "kH";
 const string CNNOpType::CONV    = "conv";
 const string CNNOpType::RELU    = "relu";
 const string CNNOpType::NORM    = "norm";
-const string CNNOpType::SOFTMAC = "softmac";
+const string CNNOpType::SOFTMAC = "softmax";
 const string CNNOpType::MAXPOOL = "maxpool";
 const string CNNOpType::FC      = "fc";
 
@@ -48,13 +48,13 @@ void CNNLayer::write(FileStorage &fs) const
     }
     fs <<"]";
     fs << CNNLabel::PARAMS << "{";
-    
+
     for (std::map<string,float>::const_iterator it=params.begin(); it!=params.end(); ++it)
         fs << it->first << it->second;
-    
+
     fs << "}";
     fs <<"}";
-    
+
 }
 void CNNLayer::write(ostream &f) const
 {
@@ -109,10 +109,10 @@ void CNNLayer::read(const FileNode& node)
             int value;
             (*it) >> value;
             params[name] = value;
-            
+
         }
     }
-    
+
 }
 
 
@@ -121,9 +121,9 @@ void CNN::forward(InputArray input, OutputArray output)
     for (auto net : _network)
     {
         CNNLayer &layer = _layers[_map[net]];
-        
+
         InputArray _input = (output.empty())? input: output;
-        
+
         if (layer.type == cnn::CNNOpType::CONV)
         {
             cnn::Op::CONV(_input, layer.weights, output, layer.bias,
@@ -175,7 +175,7 @@ CNNLayer& CNN::addLayer(const CNNLayer &layer)
 {
     size_t layerN = _layers.size();
     string name   = generateLayerName(layer.type);
-    
+
     _map[name] = layerN;
     _layers.push_back(layer);
     _network.push_back(name);
@@ -277,7 +277,7 @@ ostream& cnn::operator<<(ostream &out, const CNNLayer& w)
         out << "\t" << CNNLabel::PARAMS << "[" << w.params << "]" << endl;
     }
     out << "}" << endl;
-    
+
     return out;
 }
 ostream& cnn::operator<<(ostream &out, const CNN& w)
