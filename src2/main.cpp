@@ -96,43 +96,16 @@ void network_read(const string &filename, const string &name, const string &ofil
 int main(int, char**)
 {
     
-    vector<float>  a = {1,3,3,4,5,1,3,53,3}, b;
-    map<string, size_t> dict, dict2;
-    
-    dict.insert(pair<string,size_t>("hello",3));
-    dict.insert(pair<string,size_t>("hello2",4));
-    dict.insert(pair<string,size_t>("hello43",5));
-    dict.insert(pair<string,size_t>("hello5",6));
-    string filename = "hello.bin";
-    ofstream f(filename, ios::out | ios::binary);
-    write(f, dict);
-    f.close();
-
-    ifstream f2(filename, ios::in | ios::binary);
-    read(f2, dict2);
-    f2.close();
-    
-    for (size_t i = 0; i < b.size(); i++)
-        cout << b[i] << endl;
-    
-    for ( map<string, size_t>::const_iterator it=dict2.begin(); it!=dict2.end(); ++it)
-    {
-        cout << it->first << " " << it->second <<endl;
-    }
-//    ReadVariable(f2, filenamer);
-//        f2.close();
-//    cout << filenamer <<  " " << i2 << endl;
-    
-//        string filename = "/home/binghao/faceClassifier/preprocess/module.bin";
-//        string ofilename = filename + ".xml";
-//        string name = "12cnet";
-//        network_read(filename, name, ofilename);
-//        FileStorage fs2;
-//        cnn::CNN net;
-//        fs2.open(ofilename, FileStorage::READ);
-//        fs2["cnn"] >> net;
-//        cout << net <<endl;
-//        fs2.release();
+        string filename = "/home/binghao/faceClassifier/preprocess/module.bin";
+        string ofilename = filename + ".xml";
+        string name = "12cnet";
+        network_read(filename, name, ofilename);
+        FileStorage fs2;
+        cnn::CNN net;
+        fs2.open(ofilename, FileStorage::READ);
+        fs2["cnn"] >> net;
+        cout << net <<endl;
+        fs2.release();
 
 
     return 0;
