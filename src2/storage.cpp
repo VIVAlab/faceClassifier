@@ -2,7 +2,6 @@
 
 using namespace cnn;
 
-
 const  string CNNLabel::NAME       = "name";
 const  string CNNLabel::PARAMS     = "params";
 const  string CNNLabel::WEIGHTS    = "weihts";
@@ -13,17 +12,17 @@ const  string CNNLabel::NETWORK    = "network";
 const  string CNNLabel::CNN        = "cnn";
 
 
-const string CNNParam::PadH = "padH";
-const string CNNParam::PadW = "padW";
+const string CNNParam::PadH    = "padH";
+const string CNNParam::PadW    = "padW";
 const string CNNParam::StrideH = "sH";
 const string CNNParam::StrideW = "sW";
 const string CNNParam::KernelW = "kW";
 const string CNNParam::KernelH = "kH";
 
 
-const string CNNOpType::CONV = "conv";
-const string CNNOpType::RELU = "relu";
-const string CNNOpType::NORM = "norm";
+const string CNNOpType::CONV    = "conv";
+const string CNNOpType::RELU    = "relu";
+const string CNNOpType::NORM    = "norm";
 const string CNNOpType::SOFTMAC = "softmac";
 const string CNNOpType::MAXPOOL = "maxpool";
 const string CNNOpType::FC      = "fc";
@@ -57,6 +56,22 @@ void CNNLayer::write(FileStorage &fs) const
     fs <<"}";
     
 }
+void CNNLayer::write(ostream &f) const
+{
+    cv::writeB(f, type);
+    cv::writeB(f, weights);
+    cv::writeB(f, bias);
+    cv::writeB(f, params);
+}
+
+void CNNLayer::read(istream &f)
+{
+    cv::readB(f, type);
+    cv::readB(f, weights);
+    cv::readB(f, bias);
+    cv::readB(f, params);
+}
+
 void CNNLayer::read(const FileNode& node)
 {
     weights.clear();
@@ -185,6 +200,22 @@ void CNN::write(FileStorage &fs) const
     fs << "]";
     fs << "}";
 }
+void CNN::write(ostream &f) const
+{
+    cv::writeB(f, _name);
+    cv::writeB(f, _layers);
+    cv::writeB(f, _network);
+    cv::writeB(f, _map);
+}
+
+void CNN::read(istream &f)
+{
+    cv::readB(f, _name);
+    cv::readB(f, _layers);
+    cv::readB(f, _network);
+    cv::readB(f, _map);
+}
+
 void CNN::read(const FileNode &node)
 {
     _layers.clear();

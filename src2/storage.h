@@ -35,8 +35,10 @@
 #ifndef __storage__
 #define __storage__
 
+#include <fstream>
 #include "opencv2/opencv.hpp"
 #include "cnn.h"
+#include "bin_storage.h"
 
 using namespace cv;
 using namespace std;
@@ -76,7 +78,7 @@ namespace cnn {
         const static string FC;
     };
     
-    struct CNNLayer
+    class CNNLayer
     {
     public:
         CNNLayer(){};
@@ -87,8 +89,12 @@ namespace cnn {
         vector<float>     bias;
         
         void write(FileStorage &fs) const;
-        void setParam(const string &param, float value);
+        void write(ostream &f) const;
+        
         void read(const FileNode& node);
+        void read(istream &in);
+        
+        void setParam(const string &param, float value);
         friend ostream& operator<<(ostream &out, const CNNLayer& w);
     };
 
@@ -108,7 +114,11 @@ namespace cnn {
         CNNLayer& addLayer(const CNNLayer &layer);
 
         void write(FileStorage &fs) const;
+        void write(ostream &f) const;
+        void read(istream &f);
         void read(const FileNode &node);
+        
+      
         
         void forward(InputArray input, OutputArray output);
 
@@ -118,6 +128,24 @@ namespace cnn {
         
         friend ostream& operator<<(ostream &out, const CNN& w);
     };
+    
+    static void writeB(ostream &fs, const CNNLayer &layer)
+    {
+    
+        layer.write(fs);
+    }
+    static void readB(istream &fs, CNNLayer &layer)
+    {
+        layer.read(fs);
+    }
+    static void writeB(ostream &fs, const CNN &cnn)
+    {
+        cnn.write(fs);
+    }
+    static void readB(istream &fs, CNN &cnn)
+    {
+        cnn.read(fs);
+    }
 
     static void write(FileStorage& fs, const string&, const CNNLayer& x)
     {
@@ -148,18 +176,16 @@ namespace cnn {
     {
         for (size_t i = 0; i < vec.size(); i++)
         {
-            out << vec[i] << ((i == vec.size()-1)?"":" -1");
+            out << vec[i] << ((i == vec.size()-1)?"":", ");
         }
         return out;
     }
-    
-    
     template<class K, class V> ostream& operator<<(ostream &out, const map<K,V> &m)
     {
         size_t count = 0;
         for (typename map<K,V>::const_iterator it = m.begin(); it!= m.end(); it++, count++)
         {
-            out << it->first << ": " << it->second << ((count<m.size())? ", ": "");
+            out << it->first << ": " << it->second << ((count<(m.size()-1))? ", ": "");
         }
         return out;
     }
