@@ -23,7 +23,7 @@ const string CNNParam::KernelH = "kH";
 const string CNNOpType::CONV    = "conv";
 const string CNNOpType::RELU    = "relu";
 const string CNNOpType::NORM    = "norm";
-const string CNNOpType::SOFTMAC = "softmax";
+const string CNNOpType::SOFTMAX = "softmax";
 const string CNNOpType::MAXPOOL = "maxpool";
 const string CNNOpType::FC      = "fc";
 
@@ -136,9 +136,9 @@ void CNN::forward(InputArray input, OutputArray output)
         {
             cnn::Op::RELU(_input, output);
         }
-        else if (layer.type == cnn::CNNOpType::SOFTMAC)
+        else if (layer.type == cnn::CNNOpType::SOFTMAX)
         {
-            cnn::Op::SOFTMAC(_input, output);
+            cnn::Op::SOFTMAX(_input, output);
         }
         else if (layer.type == cnn::CNNOpType::NORM)
         {

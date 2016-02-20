@@ -73,7 +73,7 @@ namespace cnn {
         const static string CONV;
         const static string RELU;
         const static string NORM;
-        const static string SOFTMAC;
+        const static string SOFTMAX;
         const static string MAXPOOL;
         const static string FC;
     };

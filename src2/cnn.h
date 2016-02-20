@@ -77,7 +77,7 @@ namespace cnn {
 
     static void RELU(InputArrayOfArrays input,
                      OutputArrayOfArrays output);
-    static void SOFTMAC(InputArray input,
+    static void SOFTMAX(InputArray input,
                        OutputArray output);
 
     static void conv(InputArray input,

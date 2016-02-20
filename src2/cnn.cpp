@@ -198,7 +198,7 @@ void Op::relu(InputArray input, OutputArray output)
     threshold(input, output, 0, 1, THRESH_TOZERO);
 }
 
-void Op::SOFTMAC(InputArray input,
+void Op::SOFTMAX(InputArray input,
                  OutputArray output)
 {
     output.create(input.size(), CV_32F);

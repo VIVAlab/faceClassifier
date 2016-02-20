@@ -82,7 +82,7 @@ void network_read(const string &filename, const string &name, const string &ofil
     readVector(2, f, module6.bias);
     net.addLayer(module6);
 
-    module7.type = cnn::CNNOpType::SOFTMAC;
+    module7.type = cnn::CNNOpType::SOFTMAX;
     net.addLayer(module7);
 
     f.close();
@@ -95,6 +95,7 @@ void network_read(const string &filename, const string &name, const string &ofil
 
 int main(int, char**)
 {
+ 
     
         string filename = "/home/binghao/faceClassifier/preprocess/module.bin";
         string ofilename = filename + ".xml";
