@@ -131,7 +131,6 @@ namespace cnn {
     
     static void writeB(ostream &fs, const CNNLayer &layer)
     {
-    
         layer.write(fs);
     }
     static void readB(istream &fs, CNNLayer &layer)
