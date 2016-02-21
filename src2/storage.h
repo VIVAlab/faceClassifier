@@ -38,7 +38,7 @@
 #include <fstream>
 #include "opencv2/opencv.hpp"
 #include "cnn.h"
-#include "bin_storage.h"
+#include "bpersistence.hpp"
 
 using namespace cv;
 using namespace std;

@@ -6,7 +6,7 @@ using namespace std;
 #include <iostream>
 #include <fstream>
 #include "storage.h"
-#include "bin_storage.h"
+#include "bpersistence.hpp"
 
 void readMats(size_t amount, size_t rows, size_t cols, size_t depth, ifstream &f, vector<Mat> &mats)
 {
@@ -95,7 +95,7 @@ void network_read(const string &filename, const string &name, const string &ofil
 
 int main(int, char**)
 {
- 
+    
     
         string filename = "/home/binghao/faceClassifier/preprocess/module.bin";
         string ofilename = filename + ".xml";
