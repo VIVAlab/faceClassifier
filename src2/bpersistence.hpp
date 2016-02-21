@@ -43,21 +43,20 @@
 #include <fstream>
 #include <opencv2/opencv.hpp>
 
-using namespace std;
 
 namespace cv
 {
-    class BFileStorage
+    class CV_EXPORTS_W BFileStorage
     {
-
+        
     public:
         enum class Mode { READ, WRITE };
         enum { UNDEFINED = 0, OPENED = 1};
         
         BFileStorage(BFileStorage&)   = delete;
         void operator=(BFileStorage&) = delete;
-        
-        BFileStorage(const string &filename, Mode flags);
+        virtual ~BFileStorage();
+        BFileStorage(const std::string &filename, Mode flags);
         bool isOpened();
         void release();
         
@@ -67,66 +66,64 @@ namespace cv
         friend BFileStorage& operator >> (BFileStorage& bfs, _Tp& value);
         
     private:
-        ifstream _fin;
-        ofstream _fout;
+        std::ifstream _fin;
+        std::ofstream _fout;
         Mode _mode;
         int _status;
         
     };
-
     template<typename T>
-    static inline void writeScalar(ostream& out, const T& data) {
+    static inline void writeScalar(std::ostream& out, const T& data) {
         out.write(reinterpret_cast<const char*>(&data), sizeof(T));
     }
-
     template<typename T>
-    static inline void readScalar(istream& in, T& data) {
+    static inline void readScalar(std::istream& in, T& data) {
         in.read(reinterpret_cast<char*>(&data), sizeof(T));
     }
-
-    static inline void writeB(ostream& out, const size_t &_data)
+    
+    static inline void writeB(std::ostream& out, const size_t &_data)
     {
         writeScalar(out, _data);
     }
-    static inline void writeB(ostream& out, const int &_data)
+    static inline void writeB(std::ostream& out, const int &_data)
     {
         writeScalar(out, _data);
     }
-    static inline void writeB(ostream& out, const float &_data)
+    static inline void writeB(std::ostream& out, const float &_data)
     {
         writeScalar(out, _data);
     }
-    static inline void writeB(ostream& out, const double &_data)
+    static inline void writeB(std::ostream& out, const double &_data)
     {
         writeScalar(out, _data);
     }
-    static inline void writeB(ostream& out, const string &_data)
+    static inline void writeB(std::ostream& out, const std::string &_data)
     {
         writeScalar(out, _data);
     }
-
-    static inline void readB(istream& in, size_t &_data)
+    
+    static inline void readB(std::istream& in, size_t &_data)
     {
         readScalar(in, _data);
     }
-    static inline void readB(istream& in, int &_data)
+    static inline void readB(std::istream& in, int &_data)
     {
         readScalar(in, _data);
     }
-    static inline void readB(istream& in, float &_data)
+    static inline void readB(std::istream& in, float &_data)
     {
         readScalar(in, _data);
     }
-    static inline void readB(istream& in, double &_data)
+    static inline void readB(std::istream& in, double &_data)
     {
         readScalar(in, _data);
     }
-    static inline void readB(istream& in, string &_data)
+    static inline void readB(std::istream& in, std::string &_data)
     {
         readScalar(in, _data);
     }
     
-    static inline void writeB(ostream& out, const Mat &_data)
+    static inline void writeB(std::ostream& out, const Mat &_data)
     {
         writeScalar(out, _data.rows);
         writeScalar(out, _data.cols);
@@ -135,8 +132,8 @@ namespace cv
         for (int i = 0; i < _data.rows; i++)
             out.write(reinterpret_cast<const char*>(_data.ptr(i, 0)), bytes);
     }
-
-    static inline void readB(istream& in, Mat &_data)
+    
+    static inline void readB(std::istream& in, Mat &_data)
     {
         int rows, cols, type;
         readScalar(in, rows);
@@ -148,94 +145,94 @@ namespace cv
             in.read(reinterpret_cast<char*>(_data.ptr(i, 0)), bytes);
     }
     template<typename _Tp>
-    static inline void writeB(ostream& out, const Point_<_Tp>& _data)
+    static inline void writeB(std::ostream& out, const Point_<_Tp>& _data)
     {
         writeScalar(out, _data.x);
         writeScalar(out, _data.y);
     }
-
+    
     template<typename _Tp>
-    static inline void readB(istream& in, Point_<_Tp>& _data)
+    static inline void readB(std::istream& in, Point_<_Tp>& _data)
     {
         readScalar(in, _data.x);
         readScalar(in, _data.y);
     }
-
+    
     template<typename _Tp>
-    static inline void writeB(ostream& out, const Point3_<_Tp>& _data)
+    static inline void writeB(std::ostream& out, const Point3_<_Tp>& _data)
     {
         writeScalar(out, _data.x);
         writeScalar(out, _data.y);
         writeScalar(out, _data.z);
     }
-        
+    
     template<typename _Tp>
-    static inline void readB(istream& in, Point3_<_Tp>& _data)
+    static inline void readB(std::istream& in, Point3_<_Tp>& _data)
     {
         readScalar(in, _data.x);
         readScalar(in, _data.y);
         readScalar(in, _data.z);
     }
-        
+    
     template<typename _Tp>
-    static inline void writeB(ostream& out, const Size_<_Tp>& _data)
+    static inline void writeB(std::ostream& out, const Size_<_Tp>& _data)
     {
         writeScalar(out, _data.width);
         writeScalar(out, _data.height);
     }
-
+    
     template<typename _Tp>
-    static inline void readB(istream& in, Size_<_Tp>& _data)
+    static inline void readB(std::istream& in, Size_<_Tp>& _data)
     {
         readScalar(in, _data.width);
         readScalar(in, _data.height);
     }
-
+    
     template<typename _Tp>
-    static inline void writeB(ofstream& out, const Complex<_Tp>& _data)
+    static inline void writeB(std::ostream& out, const Complex<_Tp>& _data)
     {
         writeScalar(out, _data.r);
         writeScalar(out, _data.i);
     }
     template<typename _Tp>
-    static inline void readB(istream& in, Complex<_Tp>& _data)
+    static inline void readB(std::istream& in, Complex<_Tp>& _data)
     {
         readScalar(in, _data.r);
         readScalar(in, _data.i);
     }
-
+    
     template<typename _Tp>
-    static inline void writeB(ostream& out, const Rect_<_Tp>& _data)
+    static inline void writeB(std::ostream& out, const Rect_<_Tp>& _data)
     {
         writeScalar(out, _data.x);
         writeScalar(out, _data.y);
         writeScalar(out, _data.width);
         writeScalar(out, _data.height);
     }
-        
-        
+    
+    
     template<typename _Tp>
-    static inline void readB(istream& in, Rect_<_Tp>& _data)
+    static inline void readB(std::istream& in, Rect_<_Tp>& _data)
     {
         readScalar(in, _data.x);
         readScalar(in, _data.y);
         readScalar(in, _data.width);
         readScalar(in, _data.height);
     }
-
+    
     template<typename _Tp>
-    static inline void writeB(ostream& out,const Scalar_<_Tp>& _data)
+    static inline void writeB(std::ostream& out,const Scalar_<_Tp>& _data)
     {
-
+        
         writeScalar(out, _data.val[0]);
         writeScalar(out, _data.val[1]);
         writeScalar(out, _data.val[2]);
         writeScalar(out, _data.val[3]);
-
-    }
         
+    }
+    
     template<typename _Tp>
-    static inline void readB(istream& in, Scalar_<_Tp>& _data)
+    static inline void readB(std::istream& in, Scalar_<_Tp>& _data)
     {
         _Tp v0,v1,v2,v3;
         readScalar(in, v0);
@@ -247,62 +244,62 @@ namespace cv
                              saturate_cast<_Tp>(v2),
                              saturate_cast<_Tp>(v3));
     }
-
+    
     template<typename _Tp>
-    static inline void writeB(ofstream& out, const Range& _data)
+    static inline void writeB(std::ostream& out, const Range& _data)
     {
         writeScalar(out, _data.start);
         writeScalar(out, _data.end);
     }
-        
+    
     template<typename _Tp>
-    static inline void readB(istream& in, Range& _data)
+    static inline void readB(std::istream& in, Range& _data)
     {
         readScalar(in, _data.start);
         readScalar(in, _data.end);
     }
-
+    
     template<typename T>
-    static inline void writeB(ostream& out, const vector<T>& vec) {
+    static inline void writeB(std::ostream& out, const std::vector<T>& vec) {
         writeScalar(out, vec.size());
-        for (typename  vector<T>::const_iterator it = vec.begin();
-                                                 it != vec.end(); it++)
+        for (typename  std::vector<T>::const_iterator it = vec.begin();
+             it != vec.end(); it++)
             writeB(out, *it);
     }
-
+    
     template<typename K, typename V>
-    static inline void writeB(ostream& out, const map<K,V> &dict)
+    static inline void writeB(std::ostream& out, const std::map<K,V> &dict)
     {
         writeScalar(out, dict.size());
-        for (typename map<K,V>::const_iterator it = dict.begin();
-                                               it != dict.end(); ++it)
+        for (typename std::map<K,V>::const_iterator it = dict.begin();
+             it != dict.end(); ++it)
         {
             writeB(out, it->first);
             writeB(out, it->second);
         }
     }
     template<typename T>
-    static inline void writeB(ostream& out, const vector<vector<T>> &vec)
+    static inline void writeB(std::ostream& out, const std::vector<std::vector<T> > &vec)
     {
         writeScalar(out, vec.size());
-        for (typename vector<vector<T>>::const_iterator it = vec.begin();
-                                                        it!= vec.end(); it++)
+        for (typename std::vector<std::vector<T> >::const_iterator it = vec.begin();
+             it!= vec.end(); it++)
         {
             writeScalar(out, it->size());
         }
-        for (typename vector<vector<T>>::const_iterator it = vec.begin();
-                                                        it != vec.end(); it++)
+        for (typename std::vector<std::vector<T> >::const_iterator it = vec.begin();
+             it != vec.end(); it++)
         {
-            for (typename vector<T>::const_iterator it2 = it->begin();
-                                                    it2 != it->end(); it2++)
+            for (typename std::vector<T>::const_iterator it2 = it->begin();
+                 it2 != it->end(); it2++)
             {
                 writeB(out, *it2);
             }
         }
     }
-
+    
     template<typename T>
-    static inline void readB(istream& in, vector<T>& vec) {
+    static inline void readB(std::istream& in, std::vector<T>& vec) {
         size_t size;
         readScalar(in, size);
         vec.resize(size);
@@ -311,7 +308,7 @@ namespace cv
     }
     
     template<typename K, typename V>
-    static inline void readB(istream& in,map<K,V> &dict)
+    static inline void readB(std::istream& in, std::map<K,V> &dict)
     {
         size_t size;
         readScalar(in, size);
@@ -321,20 +318,20 @@ namespace cv
             V value;
             readB(in, key);
             readB(in, value);
-            dict.insert(pair<K,V>(key,value));
+            dict.insert(std::pair<K,V>(key,value));
         }
     }
     
     template<typename T>
-    static inline void readB(istream& in, vector<vector<T>> &vec)
+    static inline void readB(std::istream& in, std::vector<std::vector<T> > &vec)
     {
-        vector<size_t> _sizes;
+        std::vector<size_t> _sizes;
         readB(in, _sizes);
         vec.clear();
-        for (typename vector<size_t>::iterator it = _sizes.begin();
-                                            it != _sizes.end(); it++)
+        for (typename std::vector<size_t>::iterator it = _sizes.begin();
+             it != _sizes.end(); it++)
         {
-            vector<T> _tmp;
+            std::vector<T> _tmp;
             _tmp.resize(*it);
             for (size_t i = 0; i < *it; i++)
                 readB(in, _tmp[i]);
@@ -343,7 +340,7 @@ namespace cv
         }
     }
     
-    static inline void writeB(ostream& out, const KeyPoint &_kp)
+    static inline void writeB(std::ostream& out, const KeyPoint &_kp)
     {
         writeB(out, _kp.pt);
         writeScalar(out, _kp.size);
@@ -352,7 +349,7 @@ namespace cv
         writeScalar(out, _kp.octave);
         writeScalar(out, _kp.class_id);
     }
-    static inline void readB(ifstream &in, KeyPoint &_kp)
+    static inline void readB(std::istream &in, KeyPoint &_kp)
     {
         readB(in, _kp.pt);
         readScalar(in, _kp.size);
@@ -363,14 +360,14 @@ namespace cv
     }
     
     
-    static inline void writeB(ostream &out, const DMatch &_kp)
+    static inline void writeB(std::ostream &out, const DMatch &_kp)
     {
         writeScalar(out, _kp.queryIdx);
         writeScalar(out, _kp.trainIdx);
         writeScalar(out, _kp.imgIdx);
         writeScalar(out, _kp.distance);
     }
-    static inline void readB(ifstream &in, DMatch &_kp)
+    static inline void readB(std::istream &in, DMatch &_kp)
     {
         readScalar(in, _kp.queryIdx);
         readScalar(in, _kp.trainIdx);
@@ -396,4 +393,4 @@ namespace cv
     
 }
 #endif
-#endif 
+#endif

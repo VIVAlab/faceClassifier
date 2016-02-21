@@ -34,18 +34,22 @@
 
 #include "bpersistence.hpp"
 
-cv::BFileStorage::BFileStorage(const string &filename, Mode flags): _mode(flags)
+cv::BFileStorage::BFileStorage(const std::string &filename, Mode flags): _mode(flags)
 {
     if (flags == Mode::READ)
     {
-        _fin.open(filename, ios::in | ios::binary);
+        _fin.open(filename, std::ios::in | std::ios::binary);
         _status = _fin.is_open();
     }
     if (flags == Mode::WRITE)
     {
-        _fout.open(filename, ios::out | ios::binary);
+        _fout.open(filename, std::ios::out | std::ios::binary);
         _status = _fout.is_open();
     }
+}
+cv::BFileStorage::~BFileStorage()
+{
+    release();
 }
 bool cv::BFileStorage::isOpened()
 {
@@ -60,5 +64,3 @@ void cv::BFileStorage::release()
     else if (_mode == Mode::WRITE)
         _fout.close();
 }
-
-
