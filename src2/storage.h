@@ -35,159 +35,124 @@
 #ifndef __storage__
 #define __storage__
 
+#include <map>
+#include <vector>
 #include <fstream>
 #include "opencv2/opencv.hpp"
 #include "cnn.h"
-#include "bpersistence.hpp"
 
-using namespace cv;
 using namespace std;
+using namespace cv;
+using namespace cnn;
 
-namespace cnn {
-    
-    struct CNNLabel
+static void readMats(size_t amount, size_t rows, size_t cols, size_t depth, ifstream &f, vector<Mat> &mats)
+{
+    vector<float> buffer(amount*depth*rows*cols);
+    f.read(reinterpret_cast<char*>(&buffer[0]), amount*rows*cols*depth*sizeof(float));
+    mats.resize(amount * depth);
+    for (size_t i = 0; i < amount; i++)
     {
-        const static string NAME;
-        const static string PARAMS;
-        const static string WEIGHTS;
-        const static string LAYERS;
-        const static string BIAS;
-        const static string TYPE;
-        const static string NETWORK;
-        const static string CNN;
-    };
-    
-    struct CNNParam
-    {
-        const static string PadH;
-        const static string PadW;
-        const static string StrideH;
-        const static string StrideW;
-        const static string KernelW;
-        const static string KernelH;
-    };
-    
-    
-    struct CNNOpType
-    {
-        const static string CONV;
-        const static string RELU;
-        const static string NORM;
-        const static string SOFTMAX;
-        const static string MAXPOOL;
-        const static string FC;
-    };
-    
-    class CNNLayer
-    {
-    public:
-        CNNLayer(){};
-        string            type;
-        map<string,float> params;
-        
-        vector<Mat>       weights;
-        vector<float>     bias;
-        
-        void write(FileStorage &fs) const;
-        void write(ostream &f) const;
-        
-        void read(const FileNode& node);
-        void read(istream &in);
-        
-        void setParam(const string &param, float value);
-        friend ostream& operator<<(ostream &out, const CNNLayer& w);
-    };
-
-    struct CNN
-    {
-    private:
-        string             _name;
-        map<string,size_t> _map;
-        vector<CNNLayer>   _layers;
-        vector<string>     _network;
-        
-        string generateLayerName(const string &type);
-        
-    public:
-        CNN(const string &name = ""): _name(name){};
-        CNNLayer& getLayer(const string &name);
-        CNNLayer& addLayer(const CNNLayer &layer);
-
-        void write(FileStorage &fs) const;
-        void write(ostream &f) const;
-        void read(istream &f);
-        void read(const FileNode &node);
-        
-      
-        
-        void forward(InputArray input, OutputArray output);
-
-        void load(const string &filename);
-        void save(const string &filename);
-        
-        
-        friend ostream& operator<<(ostream &out, const CNN& w);
-    };
-    
-    static void writeB(ostream &fs, const CNNLayer &layer)
-    {
-        layer.write(fs);
-    }
-    static void readB(istream &fs, CNNLayer &layer)
-    {
-        layer.read(fs);
-    }
-    static void writeB(ostream &fs, const CNN &cnn)
-    {
-        cnn.write(fs);
-    }
-    static void readB(istream &fs, CNN &cnn)
-    {
-        cnn.read(fs);
-    }
-
-    static void write(FileStorage& fs, const string&, const CNNLayer& x)
-    {
-        x.write(fs);
-    }
-    static void write(FileStorage& fs, const string&, const CNN& x)
-    {
-        x.write(fs);
-    }
-    static void read(const FileNode &node, CNNLayer& x, const cnn::CNNLayer &default_value = cnn::CNNLayer())
-    {
-        if (node.empty())
-            x = default_value;
-        else
-            x.read(node);
-    }
-    static void read(const FileNode &node, CNN& x, const cnn::CNN &default_value = cnn::CNN())
-    {
-        if (node.empty())
-            x = default_value;
-        else
-            x.read(node);
-    }
-    ostream& operator<<(ostream &out, const CNNLayer& w);
-    ostream& operator<<(ostream &out, const CNN& w);
-    
-    template<class T> ostream& operator<<(ostream &out, const vector<T> &vec)
-    {
-        for (size_t i = 0; i < vec.size(); i++)
-        {
-            out << vec[i] << ((i == vec.size()-1)?"":", ");
+        for (size_t j = 0; j < depth; j++){
+            mats[i*depth + j]  = Mat(cols, rows, CV_32F, &buffer[(i*depth+j)*rows*cols]).t();
         }
-        return out;
     }
-    template<class K, class V> ostream& operator<<(ostream &out, const map<K,V> &m)
+}
+static void readVector(size_t amount, ifstream &f, vector<float> &vector)
+{
+    vector.resize(amount);
+    f.read((char*)&vector[0], amount * sizeof(float));
+}
+
+static void createCNNLayer(cnn::CNNLayer &layer, const string &type, const CNNParam &params,  ifstream *file = nullptr)
+{
+    layer.type = type;
+    layer.setParams(params);
+    if (file != nullptr)
     {
-        size_t count = 0;
-        for (typename map<K,V>::const_iterator it = m.begin(); it!= m.end(); it++, count++)
-        {
-            out << it->first << ": " << it->second << ((count<(m.size()-1))? ", ": "");
-        }
-        return out;
+        readMats(params.NLayers,
+                 params.KernelH,
+                 params.KernelW,
+                 params.KernelD,
+                 *file, layer.weights);
+        readVector(params.NLayers,
+                   *file, layer.bias);
     }
+}
+static void createMAXPOOL(cnn::CNNLayer &layer,  const CNNParam &params)
+{
+    createCNNLayer(layer, cnn::CNNOpType::MAXPOOL, params);
+}
+static void createCONV(cnn::CNNLayer &layer,  const CNNParam &params, ifstream &file)
+{
+    createCNNLayer(layer, cnn::CNNOpType::CONV, params, &file);
+}
+static void createFC(cnn::CNNLayer &layer,   const CNNParam &params, ifstream &file)
+{
+    createCNNLayer(layer, cnn::CNNOpType::CONV, params, &file);
+}
+static void createRELU(cnn::CNNLayer &layer)
+{
+    layer.type = cnn::CNNOpType::RELU;
+}
+static void createSOFTMAX(cnn::CNNLayer &layer)
+{
+    layer.type = cnn::CNNOpType::SOFTMAX;
+}
+static void createCNN12(const string &filename, cnn::CNN &net)
+{
+    ifstream f(filename, ios::in | ios::binary);
+
+    cnn::CNNLayer module1, module2, module3, module4, module5, module6, module7;
+
+    CNNParam params;
+    params.PadH = 0;
+    params.PadW = 0;
+    params.StrideW = 1;
+    params.StrideH = 1;
+    params.KernelH = 3;
+    params.KernelW = 3;
+    params.KernelD = 1;
+    params.NLayers = 16;
+
+    createCONV(module1, params, f);
+    net.addLayer(module1);
+
+    params.PadH = 1;
+    params.PadW = 1;
+    params.StrideW = 2;
+    params.StrideH = 2;
+    params.KernelH = 3;
+    params.KernelW = 3;
+    params.KernelD = 1;
+    params.NLayers = 1;
+
+    createMAXPOOL(module2, params);
+    net.addLayer(module2);
+
+    createRELU(module3);
+    net.addLayer(module3);
+
+    params.KernelH = 3;
+    params.KernelW = 3;
+    params.KernelD = 16;
+    params.NLayers = 16;
+    createFC(module4, params, f);
+    net.addLayer(module4);
+
+    createRELU(module5);
+    net.addLayer(module5);
+
+    params.KernelH = 16;
+    params.KernelW = 1;
+    params.KernelD = 1;
+    params.NLayers = 2;
+    createFC(module1, params, f);
+    net.addLayer(module6);
+
+    createSOFTMAX(module7);
+    net.addLayer(module7);
+    
+    f.close();
 }
 
 #endif

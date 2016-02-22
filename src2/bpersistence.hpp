@@ -35,7 +35,6 @@
 #ifndef __OPENCV_CORE_BPERSISTENCE_HPP__
 #define __OPENCV_CORE_BPERSISTENCE_HPP__
 
-#ifdef __cplusplus
 
 #include <map>
 #include <vector>
@@ -46,7 +45,7 @@
 
 namespace cv
 {
-    class CV_EXPORTS_W BFileStorage
+    class BFileStorage
     {
         
     public:
@@ -392,5 +391,4 @@ namespace cv
     }
     
 }
-#endif
 #endif
