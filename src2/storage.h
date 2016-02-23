@@ -88,7 +88,7 @@ static void createCONV(cnn::CNNLayer &layer,  const CNNParam &params, ifstream &
 }
 static void createFC(cnn::CNNLayer &layer,   const CNNParam &params, ifstream &file)
 {
-    createCNNLayer(layer, cnn::CNNOpType::CONV, params, &file);
+    createCNNLayer(layer, cnn::CNNOpType::FC, params, &file);
 }
 static void createRELU(cnn::CNNLayer &layer)
 {
@@ -132,8 +132,8 @@ static void createCNN12(const string &filename, cnn::CNN &net)
     createRELU(module3);
     net.addLayer(module3);
 
-    params.KernelH = 3;
-    params.KernelW = 3;
+    params.KernelH = 5;
+    params.KernelW = 5;
     params.KernelD = 16;
     params.NLayers = 16;
     createFC(module4, params, f);
@@ -146,12 +146,12 @@ static void createCNN12(const string &filename, cnn::CNN &net)
     params.KernelW = 1;
     params.KernelD = 1;
     params.NLayers = 2;
-    createFC(module1, params, f);
+    createFC(module6, params, f);
     net.addLayer(module6);
 
     createSOFTMAX(module7);
     net.addLayer(module7);
-    
+
     f.close();
 }
 

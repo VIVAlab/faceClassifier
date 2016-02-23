@@ -17,7 +17,7 @@ int main(int, char**)
 
         FileStorage fs(ofilename, FileStorage::WRITE);
         fs << "cnn" <<  net;
-        cout << net <<endl;
+        // cout << net <<endl;
         fs.release();
 
 
