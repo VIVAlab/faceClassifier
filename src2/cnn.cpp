@@ -172,9 +172,12 @@ void CNNLayer::read(const FileNode& node)
 
 void CNN::forward(InputArray input, OutputArray output)
 {
+
+
     for (auto net : _network)
     {
         CNNLayer &layer = _layers[_map[net]];
+
 
         InputArray _input = (output.empty())? input: output;
 
@@ -185,6 +188,8 @@ void CNN::forward(InputArray input, OutputArray output)
                           layer.params[cnn::CNNStringParam::StrideH],
                           layer.params[cnn::CNNStringParam::PadW],
                           layer.params[cnn::CNNStringParam::PadH]);
+
+
         }
         else if (layer.type == cnn::CNNOpType::RELU)
         {
@@ -208,7 +213,26 @@ void CNN::forward(InputArray input, OutputArray output)
                               layer.params[cnn::CNNStringParam::PadW],
                               layer.params[cnn::CNNStringParam::PadH]);
         }
+
+        vector<Mat> inputs;
+        _input.getMatVector(inputs);
+        for (size_t i = 0; i < inputs.size(); i++)
+            cout << inputs[i].rows << " " << inputs[i].cols << " "<<  inputs[i] <<  endl;
+
+
+        vector<Mat> outputs;
+        output.getMatVector(outputs);
+        for (size_t i = 0; i < outputs.size(); i++)
+            cout <<  outputs[i].rows << " " << outputs[i].cols << " " << outputs[i] << endl;
+
+
+
+
     }
+
+
+
+
 }
 
 
@@ -346,8 +370,8 @@ ostream& cnn::operator<<(ostream &out, const CNN& w)
 
 void Op::CONV(InputArray input,
                  InputArrayOfArrays weights,
-                 OutputArrayOfArrays output,
-                 vector<float> bias,
+                 OutputArrayOfArrays   output,
+                 vector<float> &bias,
                  int strideH,
                  int strideV,
                  int paddH,
@@ -361,12 +385,16 @@ void Op::CONV(InputArray input,
         output.create(output_items,1 , CV_32F);
     }
 
-    vector<Mat> outputs(output_items);
-
     for (size_t i = 0; i < output_items; i++)
     {
-        conv(input, weights.getMat(i), outputs[i],
+
+        conv(input, weights.getMat(i), output.getMatRef(i),
              bias[i], strideH, strideV, paddH, paddV);
+        cout << input.getMat() << endl;
+        cout << bias[i] << endl;
+        cout << weights.getMat(i) << endl;
+        cout << output.getMat(i) << endl;
+
     }
 
 }
@@ -379,16 +407,18 @@ void Op::MAX_POOL(InputArrayOfArrays  input,
                      int paddingH ,
                      int paddingV)
 {
-    CV_Assert(input.size().width == 1 || input.size().height == 1);
-    size_t input_items = max(input.size().width, input.size().height);
 
-    if (output.needed())
-        output.create(input_items,1, CV_32F);
-
-    for (size_t i = 0; i < input_items; i++)
+    vector<Mat> _inputs;
+    if (input.isMatVector())
     {
-        max_pool(input.getMat(i), output.getMatRef(i),
-                 width, height, strideH, strideV, paddingH, paddingV);
+        input.getMatVector(_inputs);
+        output.create(_inputs.size(),1, CV_32F);
+        for (size_t i = 0; i < _inputs.size(); i++)
+        {
+            max_pool(_inputs[i], output.getMatRef(i),
+                     width, height, strideH, strideV, paddingH, paddingV);
+        }
+
     }
 }
 
@@ -446,61 +476,28 @@ void Op::conv(InputArray input,
               int paddingH ,
               int paddingV )
 {
-    CV_Assert((input.type()   == CV_32F) &&
-              (weights.type() == CV_32F) &&
-              (input.channels() == weights.channels()));
 
-    Mat border, kernel, convul;
+    Mat _input, _weight, _output;
+    _weight = weights.getMat();
+
     if (paddingH || paddingV)
-    {
-        copyMakeBorder(input, border, paddingV, paddingV,
-                       paddingH, paddingH,
-                       BORDER_CONSTANT,
+        copyMakeBorder(input, _input, paddingV, paddingV,
+                       paddingH, paddingH, BORDER_CONSTANT,
                        Scalar::all(0));
-    }
     else
-    {
-        border = input.getMat();
-    }
+        _input = input.getMat();
 
-    kernel = weights.getMat();
-
-
-    int newWidth = ((border.cols - kernel.cols)/strideH) + 1;
-    int newHeight= ((border.rows - kernel.rows)/strideV) + 1;
+    int newWidth = ((_input.cols - _weight.cols)/strideH) + 1;
+    int newHeight= ((_input.rows - _weight.rows)/strideV) + 1;
     output.create(Size(newWidth, newHeight), input.type());
-    convul = output.getMat();
+    _output = output.getMat();
 
-    int channels = border.channels();
 
-    float *rI,*rK,*rO;
-
-    for (size_t row = 0; row < newHeight; row+= strideV) //rows
-    {
-        rI = border.ptr<float>(row);
-        rO = convul.ptr<float>(row);
-        for (size_t col = 0; col < newWidth; col+= strideH) //columns
+    for (size_t row = 0; row < newHeight; row+=strideV )
+        for (size_t col = 0; col < newWidth; col += strideH)
         {
-            size_t inputRealCol = channels * col;
-            float sum = 0.f;
-
-            for (size_t c  = 0; c  < channels; c++)
-            {
-                for (size_t krow = 0; krow < kernel.rows; krow++) //kernel rows
-                {
-                    rK = kernel.ptr<float>(krow);
-                    for (size_t kcol = 0; kcol < kernel.cols; kcol++) //kernel columns
-                    {
-                        sum += rI[inputRealCol + c] * rK[channels * kcol + c];
-
-                    }
-                }
-            }
-            sum += bias;
-            rO[col] = sum;
+            _output.at<float>(col, row) = _weight.dot(_input(Rect(row, col, _weight.cols, _weight.rows))) + bias;
         }
-    }
-
 }
 
 void Op::relu(InputArray input, OutputArray output)
@@ -511,8 +508,15 @@ void Op::relu(InputArray input, OutputArray output)
 void Op::SOFTMAX(InputArray input,
                  OutputArray output)
 {
-    output.create(input.size(), CV_32F);
-    Mat _input = input.getMat();
+
+
+    Mat _input;
+    if (input.isMatVector())
+        _input = input.getMat(0);
+    else
+        _input = input.getMat();
+
+    output.create(_input.size(), CV_32F);
 
     double _min, _max;
     cv::minMaxLoc(_input, &_min, &_max);
@@ -531,7 +535,6 @@ void Op::norm(InputArray input,
 {
     Scalar _mean, _stdev;
     meanStdDev(input, _mean, _stdev);
-
     vector<Mat> layers;
     split(input, layers);
     for (size_t l = 0; l < layers.size(); l++)

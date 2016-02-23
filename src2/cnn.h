@@ -52,7 +52,7 @@ namespace cnn {
     static void CONV(InputArray input,
                      InputArrayOfArrays weights,
                      OutputArrayOfArrays output,
-                     vector<float> bias,
+                     vector<float> &bias,
                      int strideW,
                      int strideH,
                      int paddW,

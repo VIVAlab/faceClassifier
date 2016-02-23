@@ -53,7 +53,7 @@ static void readMats(size_t amount, size_t rows, size_t cols, size_t depth, ifst
     for (size_t i = 0; i < amount; i++)
     {
         for (size_t j = 0; j < depth; j++){
-            mats[i*depth + j]  = Mat(cols, rows, CV_32F, &buffer[(i*depth+j)*rows*cols]).t();
+            mats[i*depth + j]  = Mat(rows, cols, CV_32F, &buffer[(i*depth+j)*rows*cols]).clone();
         }
     }
 }
@@ -485,7 +485,7 @@ static void binToXML()
     createCNN12(filename, net12);
     FileStorage fs12(ofilename, FileStorage::WRITE);
     fs12 << "cnn" <<  net12;
-    // cout << net12 << endl;
+    cout << net12 << endl;
     fs12.release();
 
     filename = "../../..//weights/12cnet.bin";
