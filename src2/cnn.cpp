@@ -361,9 +361,11 @@ void Op::CONV(InputArray input,
         output.create(output_items,1 , CV_32F);
     }
 
+    vector<Mat> outputs(output_items);
+
     for (size_t i = 0; i < output_items; i++)
     {
-        conv(input, weights.getMat(i), output.getMatRef(i),
+        conv(input, weights.getMat(i), outputs[i],
              bias[i], strideH, strideV, paddH, paddV);
     }
 
