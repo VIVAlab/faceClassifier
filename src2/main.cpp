@@ -11,12 +11,13 @@ using namespace std;
 
 void cascade(const Mat &image, cnn::CNNParam &params, cnn::CNN &net, vector<Rect> &rect)
 {
-    for (size_t c = 0; c < image.cols - 12; c+= params.StrideW)
+    for (size_t c = 0; c < image.cols - params.KernelW; c+= params.StrideW)
     {
-        for (size_t r = 0; r < image.rows - 12; r+= params.StrideH)
+        for (size_t r = 0; r < image.rows - params.KernelH; r+= params.StrideH)
         {
-            Mat test = image(Rect(c, r, params.KernelW, params.KernelH));
-            Mat output;
+            Mat test;
+            Op::norm(image(Rect(c, r, params.KernelW, params.KernelH)), test);
+            vector<Mat> output;
             net.forward(test, output);
 
         }
@@ -24,10 +25,25 @@ void cascade(const Mat &image, cnn::CNNParam &params, cnn::CNN &net, vector<Rect
 }
 
 
+struct Detection
+{
+    Rect face; //x y width height
+    float score;
+};
+
+void nms(const vector<Detection> &detections, vector<Detection> &outputs)
+{
+    Rect a, b;
+    
+    a.area() + b.area() - (a & b).area();
+}
 
 int main(int, char**)
 {
-        string filename = "../../..//weights/12net.bin";
+    
+
+    
+        string filename = "../../../weights/12net.bin";
         string ofilename = filename + ".xml";
         FileStorage fs(ofilename, FileStorage::READ);
         cnn::CNN net12("12net");
@@ -36,27 +52,34 @@ int main(int, char**)
 
 
         string image = "../../..//test/img/group1.jpg";
-    Mat img = imread(image, IMREAD_GRAYSCALE), resized;
+        Mat tmp = imread(image, CV_LOAD_IMAGE_GRAYSCALE), img, resized;
+        resize(tmp, resized, Size(0,0), 12./72., 12./72., CV_INTER_AREA);
 
-        resize(img, resized, Size(0,0), 12.f/30.f, 12.f/30.f);
-    vector<Rect> outputs;
-    cnn::CNNParam params;
-    params.StrideH = 4;
-    params.StrideW = 4;
-    params.KernelH = 12;
-    params.KernelW = 12;
-    cascade(resized, params, net12, outputs);
+        resized.convertTo(img, CV_32F);
+        img = img/255.f;
 
 
 
 
+
+        vector<Rect> outputs;
+        cnn::CNNParam params;
+        params.StrideH = 4;
+        params.StrideW = 4;
+        params.KernelH = 12;
+        params.KernelW = 12;
+        cascade(img, params, net12, outputs);
+
+
+
+//
 //        string filename = "../../..//weights/12net.bin";
 //        string ofilename = filename + ".xml";
 //        cnn::CNN net12("12net");
 //        createCNN12(filename, net12);
 //        FileStorage fs12(ofilename, FileStorage::WRITE);
 //        fs12 << "cnn" <<  net12;
-//        // cout << net12 << endl;
+//        cout << net12 << endl;
 //        fs12.release();
 //
 //        filename = "../../..//weights/12cnet.bin";
