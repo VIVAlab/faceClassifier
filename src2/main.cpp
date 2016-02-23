@@ -11,9 +11,9 @@ using namespace std;
 
 void cascade(const Mat &image, cnn::CNNParam &params, cnn::CNN &net, vector<Rect> &rect)
 {
-    for (size_t c = 0; c < image.cols; c+= params.StrideW)
+    for (size_t c = 0; c < image.cols - 12; c+= params.StrideW)
     {
-        for (size_t r = 0; r < image.rows; r+= params.StrideH)
+        for (size_t r = 0; r < image.rows - 12; r+= params.StrideH)
         {
             Mat test = image(Rect(c, r, params.KernelW, params.KernelH));
             Mat output;
@@ -36,7 +36,7 @@ int main(int, char**)
 
 
         string image = "../../..//test/img/group1.jpg";
-        Mat img = imread(image, CV_LOAD_IMAGE_GRAYSCALE), resized;
+    Mat img = imread(image, IMREAD_GRAYSCALE), resized;
 
         resize(img, resized, Size(0,0), 12.f/30.f, 12.f/30.f);
     vector<Rect> outputs;
