@@ -11,16 +11,22 @@ using namespace std;
 
 void cascade(const Mat &image, cnn::CNNParam &params, cnn::CNN &net, vector<Rect> &rect)
 {
-    for (size_t c = 0; c < image.cols - params.KernelW; c+= params.StrideW)
+    imshow("image", image);
+    cvWaitKey();
+    int ccc = 0;
+    for (size_t r = 0; r < image.rows - params.KernelH; r+= params.StrideH)
     {
-        for (size_t r = 0; r < image.rows - params.KernelH; r+= params.StrideH)
+        for (size_t c = 0; c < image.cols - params.KernelW; c+= params.StrideW)
         {
+            imshow("window",image(Rect(c, r, params.KernelW, params.KernelH)));
+            cvWaitKey();
             Mat test;
             Op::norm(image(Rect(c, r, params.KernelW, params.KernelH)), test);
             Mat output;
             net.forward(test, output);
             if (output.at<float>(0) > output.at<float>(1))
                 rect.push_back(Rect(c, r, params.KernelW, params.KernelH));
+            cout << ccc++ << endl;
         }
     }
 }
