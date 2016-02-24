@@ -23,7 +23,7 @@ void cascade(const Mat &image, cnn::CNNParam &params, cnn::CNN &net, vector<Rect
             net.forward(test, output);
             if (output.at<float>(0) > output.at<float>(1))
                 rect.push_back(Rect(c, r, params.KernelW, params.KernelH));
-            cout << output << endl;
+
         }
     }
 }
@@ -45,7 +45,9 @@ int main(int, char**)
 
         string image = "../../..//test/img/group1.jpg";
         Mat tmp = imread(image, IMREAD_GRAYSCALE), img, resized;
-        resize(tmp, resized, Size(0,0), 12./72., 12./72., CV_INTER_AREA);
+
+        resize(tmp, resized, Size(0,0), 12./72., 12./72., INTER_AREA);
+
 
         resized.convertTo(img, CV_32F);
         img = img/255.f;
@@ -62,8 +64,6 @@ int main(int, char**)
         params.KernelW = 12;
         cascade(img, params, net12, outputs);
 
-
-    
 
 //
 //        string filename = "../../..//weights/12net.bin";
