@@ -65,12 +65,14 @@ int main(int, char**)
 {
 
         string image = "../../..//test/img/group1.jpg";
-        Mat tmp = imread(image, IMREAD_GRAYSCALE), img, resized;
+        Mat tmp = imread(image, IMREAD_GRAYSCALE), img;
+        tmp.convertTo(tmp, CV_32F);
+        tmp = tmp / 255.f;
 
         vector<string> files = {
                 "../../../weights/12net.bin.xml",
                 "../../../weights/12cnet.bin.xml",
-                "../../../weights/24cnet.bin.xml"};
+                "../../../weights/24net.bin.xml"};
 
         cnn::CNN net12("12net");
         cnn::CNN net12c("12cnet");
@@ -82,9 +84,7 @@ int main(int, char**)
         double winSize = 12.;
         double minFaceSize = 72.;
         double factor = winSize/minFaceSize;
-        resize(tmp, resized, Size(0,0), factor, factor, INTER_AREA);
-        resized.convertTo(img, CV_32F);
-        img = img/255.f;
+        resize(tmp, img, Size(0,0), factor, factor, INTER_AREA);
 
 
         vector<Detection> outputs;
@@ -118,6 +118,8 @@ int main(int, char**)
             net24.forward(_tmp, output);
             if (output.at<float>(0) > output.at<float>(1))
             {
+                imshow("asdfadsf", _img24x24);
+                cvWaitKey();
                 cout <<  "accept "<< endl;
             }
         }
