@@ -44,7 +44,7 @@ int main(int, char**)
 
 
         string image = "../../..//test/img/group1.jpg";
-        Mat tmp = imread(image, CV_LOAD_IMAGE_GRAYSCALE), img, resized;
+        Mat tmp = imread(image, IMREAD_GRAYSCALE), img, resized;
         resize(tmp, resized, Size(0,0), 12./72., 12./72., CV_INTER_AREA);
 
         resized.convertTo(img, CV_32F);
