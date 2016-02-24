@@ -11,9 +11,6 @@ using namespace std;
 
 void cascade(const Mat &image, cnn::CNNParam &params, cnn::CNN &net, vector<Rect> &rect)
 {
-    imshow("image", image);
-    cvWaitKey();
-    int ccc = 0;
     for (size_t r = 0; r < image.rows - params.KernelH; r+= params.StrideH)
     {
         for (size_t c = 0; c < image.cols - params.KernelW; c+= params.StrideW)
@@ -26,7 +23,7 @@ void cascade(const Mat &image, cnn::CNNParam &params, cnn::CNN &net, vector<Rect
             net.forward(test, output);
             if (output.at<float>(0) > output.at<float>(1))
                 rect.push_back(Rect(c, r, params.KernelW, params.KernelH));
-            cout << ccc++ << endl;
+
         }
     }
 }
@@ -42,7 +39,8 @@ void nms(const vector<Detection> &detections, vector<Detection> &outputs)
 {
     Rect a, b;
     
-    a.area() + b.area() - (a & b).area();
+    cout << a.area();
+    // a.area() + b.area() - (a & b).area();
 }
 
 int main(int, char**)
@@ -59,8 +57,8 @@ int main(int, char**)
 
 
         string image = "../../..//test/img/group1.jpg";
-        Mat tmp = imread(image, CV_LOAD_IMAGE_GRAYSCALE), img, resized;
-        resize(tmp, resized, Size(0,0), 12./72., 12./72., CV_INTER_AREA);
+        Mat tmp = imread(image, IMREAD_GRAYSCALE), img, resized;
+        resize(tmp, resized, Size(0,0), 12./72., 12./72., INTER_AREA);
 
         resized.convertTo(img, CV_32F);
         img = img/255.f;
@@ -77,8 +75,6 @@ int main(int, char**)
         params.KernelW = 12;
         cascade(img, params, net12, outputs);
 
-
-    
 
 //
 //        string filename = "../../..//weights/12net.bin";
