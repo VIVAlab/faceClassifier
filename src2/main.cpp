@@ -17,9 +17,10 @@ void cascade(const Mat &image, cnn::CNNParam &params, cnn::CNN &net, vector<Rect
         {
             Mat test;
             Op::norm(image(Rect(c, r, params.KernelW, params.KernelH)), test);
-            vector<Mat> output;
+            Mat output;
             net.forward(test, output);
-
+            if (output.at<float>(0) > output.at<float>(1))
+                rect.push_back(Rect(c, r, params.KernelW, params.KernelH));
         }
     }
 }
@@ -71,6 +72,7 @@ int main(int, char**)
         cascade(img, params, net12, outputs);
 
 
+    
 
 //
 //        string filename = "../../..//weights/12net.bin";

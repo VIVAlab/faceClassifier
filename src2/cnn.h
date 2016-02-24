@@ -49,7 +49,7 @@ namespace cnn {
     class Op
     {
     public:
-    static void CONV(InputArray input,
+    static void CONV(InputArrayOfArrays input,
                      InputArrayOfArrays weights,
                      OutputArrayOfArrays output,
                      vector<float> &bias,
@@ -70,12 +70,16 @@ namespace cnn {
     static void FC(InputArrayOfArrays input,
                    InputArrayOfArrays weights,
                    InputArray bias,
-                   OutputArray output,
+                   OutputArrayOfArrays output,
                    size_t outputs);
 
     static void RELU(InputArrayOfArrays input,
                      OutputArrayOfArrays output);
-    static void SOFTMAX(InputArray input,
+        
+    static void SOFTMAX(InputArrayOfArrays input,
+                         OutputArrayOfArrays output);
+
+    static void softmax(InputArray input,
                        OutputArray output);
 
     static void conv(InputArray input,
