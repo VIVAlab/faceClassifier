@@ -49,59 +49,63 @@ namespace cnn {
     class Op
     {
     public:
-    static void CONV(InputArray input,
-                     InputArrayOfArrays weights,
-                     OutputArrayOfArrays output,
-                     vector<float> &bias,
-                     int strideW,
-                     int strideH,
-                     int paddW,
-                     int paddH );
-
-    static void MAX_POOL(InputArrayOfArrays  input,
+        static void CONV(InputArrayOfArrays input,
+                         InputArrayOfArrays weights,
                          OutputArrayOfArrays output,
-                         int width,
-                         int height,
-                         int strideW ,
-                         int strideH ,
-                         int paddingW ,
-                         int paddingH);
+                         vector<float> &bias,
+                         int strideW,
+                         int strideH,
+                         int paddW,
+                         int paddH );
 
-    static void FC(InputArrayOfArrays input,
-                   InputArrayOfArrays weights,
-                   InputArray bias,
-                   OutputArray output,
-                   size_t outputs);
+        static void MAX_POOL(InputArrayOfArrays  input,
+                             OutputArrayOfArrays output,
+                             int width,
+                             int height,
+                             int strideW ,
+                             int strideH ,
+                             int paddingW ,
+                             int paddingH);
 
-    static void RELU(InputArrayOfArrays input,
-                     OutputArrayOfArrays output);
-    static void SOFTMAX(InputArray input,
-                       OutputArray output);
+        static void FC(InputArrayOfArrays input,
+                       InputArrayOfArrays weights,
+                       InputArray bias,
+                       OutputArrayOfArrays output,
+                       size_t outputs);
 
-    static void conv(InputArray input,
-                     InputArray weights,
-                     OutputArray output,
-                     float bias = 0,
-                     int strideW = 1,
-                     int strideH = 1,
-                     int paddingW = 0,
-                     int paddingH = 0 );
+        static void RELU(InputArrayOfArrays input,
+                         OutputArrayOfArrays output);
 
-    static void relu(InputArray input, OutputArray output);
+        static void SOFTMAX(InputArrayOfArrays input,
+                            OutputArrayOfArrays output);
 
-    static void norm(InputArray input,
-                     OutputArray output,
-                     Scalar mean = Scalar::all(0),
-                     Scalar stdev=Scalar::all(1));
+        static void softmax(InputArray input,
+                            OutputArray output);
 
-    static void max_pool(InputArray input,
+        static void conv(InputArray input,
+                         InputArray weights,
                          OutputArray output,
-                         int width,
-                         int height,
-                         int strideW = 1 ,
+                         float bias = 0,
+                         int strideW = 1,
                          int strideH = 1,
                          int paddingW = 0,
-                         int paddingH = 0);
+                         int paddingH = 0 );
+
+        static void relu(InputArray input, OutputArray output);
+
+        static void norm(InputArray input,
+                         OutputArray output,
+                         Scalar mean = Scalar::all(0),
+                         Scalar stdev=Scalar::all(1));
+
+        static void max_pool(InputArray input,
+                             OutputArray output,
+                             int width,
+                             int height,
+                             int strideW = 1 ,
+                             int strideH = 1,
+                             int paddingW = 0,
+                             int paddingH = 0);
     };
 
 
@@ -266,8 +270,8 @@ namespace cnn {
         }
         return out;
     }
-
-
+    
+    
 }
 
 
