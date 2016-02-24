@@ -9,37 +9,31 @@ using namespace std;
 
 
 
-
+void loadNet(const string &filename, cnn::CNN &net)
+{
+    FileStorage fs(filename, FileStorage::READ);
+    fs["cnn"] >> net;
+    fs.release();
+}
 
 int main(int, char**)
 {
     
 
-    
-        string filename = "../../../weights/12net.bin";
-        string ofilename = filename + ".xml";
-        FileStorage fs(ofilename, FileStorage::READ);
+        vector<string> files = {
+                "../../../weights/12net.bin.xml",
+                "../../../weights/12cnet.bin.xml"};
         cnn::CNN net12("12net");
-        fs["cnn"] >> net12;
-        fs.release();
-
-
-
-        filename = "../../../weights/12cnet.bin";
-        ofilename = filename + ".xml";
         cnn::CNN net12c("12cnet");
-        createCNN12Calibration(filename, net12c);
-        FileStorage fs12c(ofilename, FileStorage::READ);
-        fs12c["cnn"] >> net12c;
-        fs12c.release();
+        loadNet(files[0], net12);
+        loadNet(files[1], net12c);
+
 
 
 
         string image = "../../..//test/img/group1.jpg";
         Mat tmp = imread(image, IMREAD_GRAYSCALE), img, resized;
         resize(tmp, resized, Size(0,0), 12./72., 12./72., INTER_AREA);
-
-
         resized.convertTo(img, CV_32F);
         img = img/255.f;
 
@@ -57,13 +51,11 @@ int main(int, char**)
         cnn::Op::cascade(img, params, net12, outputs);
         cnn::Op::nms(outputs, .3f);
 
-    for (size_t i = 0; i < outputs.size(); i++)
-    {
-        Mat region = img(outputs[i].face), output;
-        
-        net12c.forward(region, output);
-        cout << output << endl; 
-    }
+        for (size_t i = 0; i < outputs.size(); i++)
+        {
+            Mat region = img(outputs[i].face), output;
+            net12c.forward(region, output);
+        }
 
     Mat copy = img.clone();
     for (size_t i = 0; i < outputs.size(); i++)
