@@ -7,7 +7,46 @@ using namespace std;
 #include "storage.h"
 
 
-
+Detection& applyTransformationCode(Detection &detection,const Mat &response, const float &thr)
+{
+    struct _coords {
+        size_t s;
+        size_t x;
+        size_t y;
+    };
+    vector<_coords> trans;
+    for (size_t i = 0; i< response.rows * response.cols ; i++)
+    {
+        if (response.at<float>(i) > thr)
+        {
+            _coords t = {i / 9, i / 3, i % 3 };
+            trans.push_back(std::move(t));
+        }
+    }
+    
+    vector<float> s = {0.83, 0.91, 1.0, 1.10, 1.21};
+    vector<float> x = {-0.17, 0.0, 0.17};
+    vector<float> y = {-0.17, 0.0, 0.17};
+    
+    float ts = 1.f, tx = 0.f, ty = 0.f;
+    for (size_t i = 0; i < trans.size(); i++)
+    {
+        _coords &_tr = trans[i];
+        ts += s[_tr.s];
+        tx += x[_tr.x];
+        ty += y[_tr.y];
+    }
+    ts /= trans.size();
+    tx /= trans.size();
+    ty /= trans.size();
+    
+    detection.face.x -= ((tx * detection.face.width)/ts);
+    detection.face.y -= ((ty * detection.face.height)/ts);
+    detection.face.width /= ts;
+    detection.face.width /= ts;
+    
+    return detection;
+}
 
 void loadNet(const string &filename, cnn::CNN &net)
 {
@@ -61,7 +100,7 @@ int main(int, char**)
     for (size_t i = 0; i < outputs.size(); i++)
         rectangle(copy, outputs[i].face.tl(), outputs[i].face.br(), Scalar::all(255));
     imshow("before", copy);
-    cvWaitKey();
+    waitKey();
 
 
 
@@ -70,7 +109,7 @@ int main(int, char**)
         rectangle(img, outputs[i].face.tl(), outputs[i].face.br(), Scalar::all(255));
 
         imshow("after", img);
-        cvWaitKey();
+        waitKey();
 
 //
 //        string filename = "../../..//weights/12net.bin";
