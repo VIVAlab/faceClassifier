@@ -16,7 +16,7 @@ void cascade(const Mat &image, cnn::CNNParam &params, cnn::CNN &net, vector<Rect
         for (size_t c = 0; c < image.cols - params.KernelW; c+= params.StrideW)
         {
             imshow("window",image(Rect(c, r, params.KernelW, params.KernelH)));
-            cvWaitKey();
+            waitKey();
             Mat test;
             Op::norm(image(Rect(c, r, params.KernelW, params.KernelH)), test);
             Mat output;
