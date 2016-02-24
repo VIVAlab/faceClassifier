@@ -19,31 +19,37 @@ Detection& applyTransformationCode(Detection &detection,const Mat &response, con
     {
         if (response.at<float>(i) > thr)
         {
-            _coords t = {i / 9, i / 3, i % 3 };
+            _coords t = { i / 9 , (i / 3) % 3, i % 3 };
             trans.push_back(std::move(t));
         }
     }
-    
+
+
     vector<float> s = {0.83, 0.91, 1.0, 1.10, 1.21};
     vector<float> x = {-0.17, 0.0, 0.17};
     vector<float> y = {-0.17, 0.0, 0.17};
     
-    float ts = 1.f, tx = 0.f, ty = 0.f;
-    for (size_t i = 0; i < trans.size(); i++)
+    float ts = 0.f, tx = 0.f, ty = 0.f;
+
+    if (trans.size())
     {
-        _coords &_tr = trans[i];
-        ts += s[_tr.s];
-        tx += x[_tr.x];
-        ty += y[_tr.y];
+        for (size_t i = 0; i < trans.size(); i++)
+        {
+            _coords &_tr = trans[i];
+            ts += s[_tr.s];
+            tx += x[_tr.x];
+            ty += y[_tr.y];
+        }
+
+        ts /= trans.size();
+        tx /= trans.size();
+        ty /= trans.size();
+        //cout << ts << " " << tx << " " << ty << endl;
+        detection.face.x -= ((tx * detection.face.width)/ts);
+        detection.face.y -= ((ty * detection.face.height)/ts);
+        detection.face.width /= ts;
+        detection.face.width /= ts;
     }
-    ts /= trans.size();
-    tx /= trans.size();
-    ty /= trans.size();
-    
-    detection.face.x -= ((tx * detection.face.width)/ts);
-    detection.face.y -= ((ty * detection.face.height)/ts);
-    detection.face.width /= ts;
-    detection.face.width /= ts;
     
     return detection;
 }
@@ -57,27 +63,28 @@ void loadNet(const string &filename, cnn::CNN &net)
 
 int main(int, char**)
 {
-    
-
-        vector<string> files = {
-                "../../../weights/12net.bin.xml",
-                "../../../weights/12cnet.bin.xml"};
-        cnn::CNN net12("12net");
-        cnn::CNN net12c("12cnet");
-        loadNet(files[0], net12);
-        loadNet(files[1], net12c);
-
-
-
 
         string image = "../../..//test/img/group1.jpg";
         Mat tmp = imread(image, IMREAD_GRAYSCALE), img, resized;
-        resize(tmp, resized, Size(0,0), 12./72., 12./72., INTER_AREA);
+
+        vector<string> files = {
+                "../../../weights/12net.bin.xml",
+                "../../../weights/12cnet.bin.xml",
+                "../../../weights/24cnet.bin.xml"};
+
+        cnn::CNN net12("12net");
+        cnn::CNN net12c("12cnet");
+        cnn::CNN net24("24net");
+        loadNet(files[0], net12);
+        loadNet(files[1], net12c);
+        loadNet(files[2], net24);
+
+        double winSize = 12.;
+        double minFaceSize = 72.;
+        double factor = winSize/minFaceSize;
+        resize(tmp, resized, Size(0,0), factor, factor, INTER_AREA);
         resized.convertTo(img, CV_32F);
         img = img/255.f;
-
-
-
 
 
         vector<Detection> outputs;
@@ -90,12 +97,31 @@ int main(int, char**)
         cnn::Op::cascade(img, params, net12, outputs);
         cnn::Op::nms(outputs, .3f); //Thresholds for nms
 
+        //apply calibration
         for (size_t i = 0; i < outputs.size(); i++)
         {
             Mat region = img(outputs[i].face), output;
             net12c.forward(region, output);
             outputs[i] = applyTransformationCode(outputs[i], output, .1f);
         }
+
+        for (size_t i = 0; i < outputs.size(); i++)
+        {
+            outputs[i].face.x /= factor;
+            outputs[i].face.y /= factor;
+            outputs[i].face.width  /= factor;
+            outputs[i].face.height /= factor;
+
+            Mat _img24x24, _tmp, output;
+            resize(tmp(outputs[i].face), _img24x24, Size(24,24));
+            Op::norm(_img24x24, _tmp);
+            net24.forward(_tmp, output);
+            if (output.at<float>(0) > output.at<float>(1))
+            {
+                cout <<  "accept "<< endl;
+            }
+        }
+
 
 
 
