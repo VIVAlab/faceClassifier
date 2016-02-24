@@ -88,19 +88,15 @@ int main(int, char**)
         params.KernelW = 12;
 
         cnn::Op::cascade(img, params, net12, outputs);
-        cnn::Op::nms(outputs, .3f);
+        cnn::Op::nms(outputs, .3f); //Thresholds for nms
 
         for (size_t i = 0; i < outputs.size(); i++)
         {
             Mat region = img(outputs[i].face), output;
             net12c.forward(region, output);
+            applyTransformationCode(outputs[i], output, .1f);
         }
 
-    Mat copy = img.clone();
-    for (size_t i = 0; i < outputs.size(); i++)
-        rectangle(copy, outputs[i].face.tl(), outputs[i].face.br(), Scalar::all(255));
-    imshow("before", copy);
-    waitKey();
 
 
 
