@@ -94,7 +94,7 @@ int main(int, char**)
         {
             Mat region = img(outputs[i].face), output;
             net12c.forward(region, output);
-            applyTransformationCode(outputs[i], output, .1f);
+            outputs[i] = applyTransformationCode(outputs[i], output, .1f);
         }
 
 
