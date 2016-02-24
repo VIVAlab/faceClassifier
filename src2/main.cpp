@@ -15,15 +15,13 @@ void cascade(const Mat &image, cnn::CNNParam &params, cnn::CNN &net, vector<Rect
     {
          for (size_t c = 0; c < image.cols - params.KernelW; c+= params.StrideW)
         {
-            imshow("temp", image(Rect(c, r, params.KernelW, params.KernelH)));
-            cvWaitKey();
+
             Mat test;
             Op::norm(image(Rect(c, r, params.KernelW, params.KernelH)), test);
             Mat output;
             net.forward(test, output);
             if (output.at<float>(0) > output.at<float>(1))
                 rect.push_back(Rect(c, r, params.KernelW, params.KernelH));
-
         }
     }
 }
@@ -46,7 +44,7 @@ int main(int, char**)
         string image = "../../..//test/img/group1.jpg";
         Mat tmp = imread(image, IMREAD_GRAYSCALE), img, resized;
 
-        resize(tmp, resized, Size(0,0), 12./72., 12./72., INTER_AREA);
+        resize(tmp, resized, Size(0,0), 12./90., 12./90., INTER_AREA);
 
 
         resized.convertTo(img, CV_32F);
@@ -64,6 +62,11 @@ int main(int, char**)
         params.KernelW = 12;
         cascade(img, params, net12, outputs);
 
+    for (size_t i = 0; i < outputs.size(); i++)
+        rectangle(img, outputs[i].tl(), outputs[i].br(), Scalar::all(255));
+
+    imshow("temp", img);
+    cvWaitKey();
 
 //
 //        string filename = "../../..//weights/12net.bin";

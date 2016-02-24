@@ -1,3 +1,6 @@
+
+
+
 /**************************************************************************************************
  **************************************************************************************************
 
@@ -212,8 +215,19 @@ void CNN::forward(InputArray input, OutputArray output)
             cnn::Op::FC(_input, layer.weights, layer.bias, _tmp, layer.params[cnn::CNNStringParam::NLayers]);
         }
 
+//        for (size_t i = 0; i < _input.size(); i++)
+//        {
+//            printf("%d %d\n", _input[i].rows, _input[i].cols);
+//            cout << _input[i] << endl;
+//        }
+//        for (size_t i = 0; i < _tmp.size(); i++)
+//        {
+//            printf("%d %d\n", _tmp[i].rows, _tmp[i].cols);
+//            cout << _tmp[i] << endl;
+//        }
         if (i == _network.size() - 1)
         {
+
             _tmp[0].copyTo(output.getMatRef());
         }
         else
@@ -359,8 +373,8 @@ ostream& cnn::operator<<(ostream &out, const CNN& w)
 
 
 
-void Op::CONV(InputArrayOfArrays input,
-              InputArrayOfArrays weights,
+void Op::CONV(InputArrayOfArrays input,     //const vector<Mat> &
+              InputArrayOfArrays weights,  // const vector<Mat> &
               OutputArrayOfArrays   output,
               vector<float> &bias,
               int strideH,
@@ -368,13 +382,14 @@ void Op::CONV(InputArrayOfArrays input,
               int paddH,
               int paddV )
 {
-    vector<Mat> _input;
+    vector<Mat> _weights, _input;
     input.getMatVector(_input);
+    weights.getMatVector(_weights);
 
     if (output.needed())
-        output.create(_input.size(),1, CV_32F);
+        output.create(_weights.size(),1, CV_32F);
 
-    for (size_t i = 0; i < _input.size(); i++)
+    for (size_t i = 0; i < _weights.size(); i++)
     {
         conv(_input[0], weights.getMat(i), output.getMatRef(i),
              bias[i], strideH, strideV, paddH, paddV);
@@ -515,7 +530,8 @@ void Op::softmax(InputArray input,
     double _min, _max;
     cv::minMaxIdx(_input, &_min, &_max);
 
-    _output = _input - _max;
+    exp(_input - _max, _output);
+
     double _sum = sum(_output).val[0];
     _output = _output / _sum;
 
