@@ -215,16 +215,19 @@ void CNN::forward(InputArray input, OutputArray output)
             cnn::Op::FC(_input, layer.weights, layer.bias, _tmp, layer.params[cnn::CNNStringParam::NLayers]);
         }
 
-//        for (size_t i = 0; i < _input.size(); i++)
-//        {
-//            printf("%d %d\n", _input[i].rows, _input[i].cols);
-//            cout << _input[i] << endl;
-//        }
-//        for (size_t i = 0; i < _tmp.size(); i++)
-//        {
-//            printf("%d %d\n", _tmp[i].rows, _tmp[i].cols);
-//            cout << _tmp[i] << endl;
-//        }
+        if (_debug)
+        {
+            for (size_t i = 0; i < _input.size(); i++)
+            {
+                printf("%d %d\n", _input[i].rows, _input[i].cols);
+                cout << _input[i] << endl;
+            }
+            for (size_t i = 0; i < _tmp.size(); i++)
+            {
+                printf("%d %d\n", _tmp[i].rows, _tmp[i].cols);
+                cout << _tmp[i] << endl;
+            }
+        }
         if (i == _network.size() - 1)
         {
 

@@ -36,6 +36,7 @@
 #define __cnn__
 
 #include <fstream>
+#include <algorithm>
 #include "opencv2/opencv.hpp"
 #include "bpersistence.hpp"
 
@@ -44,71 +45,11 @@ using namespace std;
 
 namespace cnn {
 
-
-
-    class Op
+    struct Detection
     {
-    public:
-        static void CONV(InputArrayOfArrays input,
-                         InputArrayOfArrays weights,
-                         OutputArrayOfArrays output,
-                         vector<float> &bias,
-                         int strideW,
-                         int strideH,
-                         int paddW,
-                         int paddH );
-
-        static void MAX_POOL(InputArrayOfArrays  input,
-                             OutputArrayOfArrays output,
-                             int width,
-                             int height,
-                             int strideW ,
-                             int strideH ,
-                             int paddingW ,
-                             int paddingH);
-
-        static void FC(InputArrayOfArrays input,
-                       InputArrayOfArrays weights,
-                       InputArray bias,
-                       OutputArrayOfArrays output,
-                       size_t outputs);
-
-        static void RELU(InputArrayOfArrays input,
-                         OutputArrayOfArrays output);
-
-        static void SOFTMAX(InputArrayOfArrays input,
-                            OutputArrayOfArrays output);
-
-        static void softmax(InputArray input,
-                            OutputArray output);
-
-        static void conv(InputArray input,
-                         InputArray weights,
-                         OutputArray output,
-                         float bias = 0,
-                         int strideW = 1,
-                         int strideH = 1,
-                         int paddingW = 0,
-                         int paddingH = 0 );
-
-        static void relu(InputArray input, OutputArray output);
-
-        static void norm(InputArray input,
-                         OutputArray output,
-                         Scalar mean = Scalar::all(0),
-                         Scalar stdev=Scalar::all(1));
-
-        static void max_pool(InputArray input,
-                             OutputArray output,
-                             int width,
-                             int height,
-                             int strideW = 1 ,
-                             int strideH = 1,
-                             int paddingW = 0,
-                             int paddingH = 0);
+        Rect face;
+        float score;
     };
-
-
 
     struct CNNLabel
     {
@@ -187,11 +128,12 @@ namespace cnn {
         map<string,size_t> _map;
         vector<CNNLayer>   _layers;
         vector<string>     _network;
+        bool _debug;
 
         string generateLayerName(const string &type);
 
     public:
-        CNN(const string &name = ""): _name(name){};
+        CNN(const string &name = "", bool debug = false): _name(name), _debug(debug){};
         CNNLayer& getLayer(const string &name);
         CNNLayer& addLayer(const CNNLayer &layer);
 
@@ -206,10 +148,129 @@ namespace cnn {
 
         void load(const string &filename);
         void save(const string &filename);
-
-
+        
+        
         friend ostream& operator<<(ostream &out, const CNN& w);
     };
+
+    class Op
+    {
+    public:
+
+
+
+        static void cascade(const Mat &image, cnn::CNNParam &params, cnn::CNN &net, vector<Detection> &rect)
+        {
+            for (size_t r = 0; r < image.rows - params.KernelH; r+= params.StrideH)
+            {
+                for (size_t c = 0; c < image.cols - params.KernelW; c+= params.StrideW)
+                {
+                    Mat test, output;
+                    Rect area(c,r,params.KernelW, params.KernelH);
+                    Op::norm(image(area), test);
+                    net.forward(test, output);
+
+                    if (output.at<float>(0) > output.at<float>(1))
+                    {
+                        Detection detection;
+                        detection.face  = area;
+                        detection.score = output.at<float>(0);
+                        rect.push_back(std::move(detection));
+                    }
+                }
+            }
+        }
+
+        static void nms(vector<Detection> &detections, const float &threshold)
+        {
+            sort(detections.begin(), detections.end(), [](const Detection &i, const Detection &j)
+                                    { return i.score > j.score;});
+
+            float tmp;
+            for (unsigned i = 0; i < detections.size(); i++)
+            {
+                for (unsigned j = i + 1; j < detections.size(); j++)
+                {
+                   if (
+                        (
+                         tmp = (float)(detections[i].face & detections[j].face).area() /
+                         ( detections[i].face.area() + detections[j].face.area() -
+                          (detections[i].face & detections[j].face).area() )
+                         )
+                        > threshold)
+
+                    {
+                        detections.erase(detections.begin() + j);
+                        --j;
+                    }
+                }
+            }
+        }
+
+        static void CONV(InputArrayOfArrays input,
+                         InputArrayOfArrays weights,
+                         OutputArrayOfArrays output,
+                         vector<float> &bias,
+                         int strideW,
+                         int strideH,
+                         int paddW,
+                         int paddH );
+
+        static void MAX_POOL(InputArrayOfArrays  input,
+                             OutputArrayOfArrays output,
+                             int width,
+                             int height,
+                             int strideW ,
+                             int strideH ,
+                             int paddingW ,
+                             int paddingH);
+
+        static void FC(InputArrayOfArrays input,
+                       InputArrayOfArrays weights,
+                       InputArray bias,
+                       OutputArrayOfArrays output,
+                       size_t outputs);
+
+        static void RELU(InputArrayOfArrays input,
+                         OutputArrayOfArrays output);
+
+        static void SOFTMAX(InputArrayOfArrays input,
+                            OutputArrayOfArrays output);
+
+        static void softmax(InputArray input,
+                            OutputArray output);
+
+        static void conv(InputArray input,
+                         InputArray weights,
+                         OutputArray output,
+                         float bias = 0,
+                         int strideW = 1,
+                         int strideH = 1,
+                         int paddingW = 0,
+                         int paddingH = 0 );
+
+        static void relu(InputArray input, OutputArray output);
+
+        static void norm(InputArray input,
+                         OutputArray output,
+                         Scalar mean = Scalar::all(0),
+                         Scalar stdev=Scalar::all(1));
+
+        static void max_pool(InputArray input,
+                             OutputArray output,
+                             int width,
+                             int height,
+                             int strideW = 1 ,
+                             int strideH = 1,
+                             int paddingW = 0,
+                             int paddingH = 0);
+    };
+
+
+
+
+
+
 
     static void writeB(ostream &fs, const CNNLayer &layer)
     {

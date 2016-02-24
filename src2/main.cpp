@@ -9,23 +9,6 @@ using namespace std;
 
 
 
-void cascade(const Mat &image, cnn::CNNParam &params, cnn::CNN &net, vector<Rect> &rect)
-{
-    for (size_t r = 0; r < image.rows - params.KernelH; r+= params.StrideH)
-    {
-         for (size_t c = 0; c < image.cols - params.KernelW; c+= params.StrideW)
-        {
-
-            Mat test;
-            Op::norm(image(Rect(c, r, params.KernelW, params.KernelH)), test);
-            Mat output;
-            net.forward(test, output);
-            if (output.at<float>(0) > output.at<float>(1))
-                rect.push_back(Rect(c, r, params.KernelW, params.KernelH));
-        }
-    }
-}
-
 
 
 int main(int, char**)
@@ -41,10 +24,20 @@ int main(int, char**)
         fs.release();
 
 
+
+        filename = "../../../weights/12cnet.bin";
+        ofilename = filename + ".xml";
+        cnn::CNN net12c("12cnet");
+        createCNN12Calibration(filename, net12c);
+        FileStorage fs12c(ofilename, FileStorage::READ);
+        fs12c["cnn"] >> net12c;
+        fs12c.release();
+
+
+
         string image = "../../..//test/img/group1.jpg";
         Mat tmp = imread(image, IMREAD_GRAYSCALE), img, resized;
-
-        resize(tmp, resized, Size(0,0), 12./90., 12./90., INTER_AREA);
+        resize(tmp, resized, Size(0,0), 12./72., 12./72., INTER_AREA);
 
 
         resized.convertTo(img, CV_32F);
@@ -54,19 +47,38 @@ int main(int, char**)
 
 
 
-        vector<Rect> outputs;
+        vector<Detection> outputs;
         cnn::CNNParam params;
         params.StrideH = 4;
         params.StrideW = 4;
         params.KernelH = 12;
         params.KernelW = 12;
-        cascade(img, params, net12, outputs);
+
+        cnn::Op::cascade(img, params, net12, outputs);
+        cnn::Op::nms(outputs, .3f);
 
     for (size_t i = 0; i < outputs.size(); i++)
-        rectangle(img, outputs[i].tl(), outputs[i].br(), Scalar::all(255));
+    {
+        Mat region = img(outputs[i].face), output;
+        
+        net12c.forward(region, output);
+        cout << output << endl; 
+    }
 
-    imshow("temp", img);
+    Mat copy = img.clone();
+    for (size_t i = 0; i < outputs.size(); i++)
+        rectangle(copy, outputs[i].face.tl(), outputs[i].face.br(), Scalar::all(255));
+    imshow("before", copy);
     cvWaitKey();
+
+
+
+
+    for (size_t i = 0; i < outputs.size(); i++)
+        rectangle(img, outputs[i].face.tl(), outputs[i].face.br(), Scalar::all(255));
+
+        imshow("after", img);
+        cvWaitKey();
 
 //
 //        string filename = "../../..//weights/12net.bin";
