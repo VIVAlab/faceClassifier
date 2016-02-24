@@ -35,7 +35,8 @@ void nms(const vector<Detection> &detections, vector<Detection> &outputs)
 {
     Rect a, b;
     
-    a.area() + b.area() - (a & b).area();
+    cout << a.area();
+    // a.area() + b.area() - (a & b).area();
 }
 
 int main(int, char**)
@@ -52,8 +53,8 @@ int main(int, char**)
 
 
         string image = "../../..//test/img/group1.jpg";
-        Mat tmp = imread(image, CV_LOAD_IMAGE_GRAYSCALE), img, resized;
-        resize(tmp, resized, Size(0,0), 12./72., 12./72., CV_INTER_AREA);
+        Mat tmp = imread(image, IMREAD_GRAYSCALE), img, resized;
+        resize(tmp, resized, Size(0,0), 12./72., 12./72., INTER_AREA);
 
         resized.convertTo(img, CV_32F);
         img = img/255.f;
@@ -69,7 +70,6 @@ int main(int, char**)
         params.KernelH = 12;
         params.KernelW = 12;
         cascade(img, params, net12, outputs);
-
 
 
 //
