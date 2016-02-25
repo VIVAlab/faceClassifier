@@ -105,7 +105,7 @@ int main(int, char**)
             outputs[i] = applyTransformationCode(outputs[i], output, .1f);
         }
 
-        for (size_t i = 0; i < outputs.size(); i++)
+    for (size_t i = 0; i < outputs.size(); i++)
         {
             outputs[i].face.x /= factor;
             outputs[i].face.y /= factor;
