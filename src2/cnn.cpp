@@ -187,11 +187,13 @@ void CNN::forward(InputArray input, OutputArray output)
         if (layer.type == cnn::CNNOpType::CONV)
         {
             cnn::Op::CONV(_input, layer.weights, _tmp, layer.bias,
+                          layer.params[cnn::CNNStringParam::NLayers],
                           layer.params[cnn::CNNStringParam::KernelD],
                           layer.params[cnn::CNNStringParam::StrideW],
                           layer.params[cnn::CNNStringParam::StrideH],
                           layer.params[cnn::CNNStringParam::PadW],
                           layer.params[cnn::CNNStringParam::PadH]);
+            
         }
         else if (layer.type == cnn::CNNOpType::RELU)
         {
@@ -199,6 +201,7 @@ void CNN::forward(InputArray input, OutputArray output)
         }
         else if (layer.type == cnn::CNNOpType::SOFTMAX)
         {
+            cout << _input[0].t() << endl;
             cnn::Op::SOFTMAX(_input, _tmp);
         }
         else if (layer.type == cnn::CNNOpType::MAXPOOL)
@@ -220,12 +223,12 @@ void CNN::forward(InputArray input, OutputArray output)
         {
             for (size_t i = 0; i < _input.size(); i++)
             {
-                printf("%d %d\n", _input[i].rows, _input[i].cols);
-                cout << _input[i] << endl;
+                //printf("%d %d\n", _input[i].rows, _input[i].cols);
+                cout << _input[i] <<  endl;
             }
             for (size_t i = 0; i < _tmp.size(); i++)
             {
-                printf("%d %d\n", _tmp[i].rows, _tmp[i].cols);
+                //printf("%d %d\n", _tmp[i].rows, _tmp[i].cols);
                 cout << _tmp[i] << endl;
             }
         }
@@ -381,6 +384,7 @@ void Op::CONV(InputArrayOfArrays input,     //const vector<Mat> &
               InputArrayOfArrays weights,  // const vector<Mat> &
               OutputArrayOfArrays   output,
               vector<float> &bias,
+              const int nLayers,
               const int kernelDepth,
               const int strideH,
               const int strideV,
@@ -392,11 +396,11 @@ void Op::CONV(InputArrayOfArrays input,     //const vector<Mat> &
     weights.getMatVector(_weights);
 
     if (output.needed())
-        output.create(_weights.size() / kernelDepth,1, CV_32F);
+        output.create(nLayers, 1, CV_32F);
 
     vector<Mat> _conv(kernelDepth);
     
-    for (size_t i = 0, _inputIdx = 0; i < _weights.size(); i++, _inputIdx++)
+    for (size_t i = 0, _inputIdx = 0, _layersInput = 0; i < _weights.size(); i++, _inputIdx++)
     {
         
         conv(_input[_inputIdx], weights.getMat(i), _conv[_inputIdx],
@@ -405,7 +409,7 @@ void Op::CONV(InputArrayOfArrays input,     //const vector<Mat> &
         
         if (_inputIdx == (kernelDepth - 1))
         {
-            Mat &_output = output.getMatRef(i);
+            Mat &_output = output.getMatRef(_layersInput++);
             _output.create(_conv[0].size(), CV_32F);
             for (size_t k = 0; k < _conv.size(); k++)
             {

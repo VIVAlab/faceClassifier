@@ -84,7 +84,7 @@ int main(int, char**)
         cnn::CNN net12c("12cnet");
         cnn::CNN net24("24net");
         cnn::CNN net24c("24cnet");
-        cnn::CNN net48("48net", true);
+        cnn::CNN net48("48net");
         cnn::CNN net48c("48cnet");
         loadNet(files[0], net12);
         loadNet(files[1], net12c);

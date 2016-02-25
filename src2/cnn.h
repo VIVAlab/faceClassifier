@@ -218,9 +218,12 @@ namespace cnn {
                     Mat normImg, netOutput;
                     Op::norm(image(roi), normImg);
                     net.forward(normImg, netOutput);
-
+                    
+                    cout << netOutput.t() << endl;
+                    
                     if (netOutput.at<float>(0) > threshold)
                     {
+                        
                         Detection detection;
                         detection.face  = roi;
                         detection.score = netOutput.at<float>(0);
@@ -264,6 +267,7 @@ namespace cnn {
                          InputArrayOfArrays weights,
                          OutputArrayOfArrays output,
                          vector<float> &bias,
+                         const int nLayers,
                          const int kernelD,
                          const int strideW,
                          const int strideH,
