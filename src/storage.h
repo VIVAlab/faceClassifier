@@ -46,14 +46,14 @@ using namespace cv;
 using namespace cnn;
 
 
-void loadNet(const string &filename, cnn::CNN &net)
+static void loadNet(const string &filename, cnn::CNN &net)
 {
     FileStorage fs(filename, FileStorage::READ);
     fs["cnn"] >> net;
     fs.release();
 }
 
-auto saveNet = [](const string &filename, cnn::CNN &net) {
+static void  saveNet(const string &filename, cnn::CNN &net) {
     FileStorage fs(filename, FileStorage::WRITE);
     fs << "cnn" <<  net;
     fs.release();

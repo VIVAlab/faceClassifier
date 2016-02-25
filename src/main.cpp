@@ -6,49 +6,7 @@ using namespace std;
 #include <iostream>
 #include "storage.h"
 
-void backProjectDetections(vector<Detection> &detects, const double &factor)
-{
-    for (size_t i = 0 ; i < detects.size(); i++)
-    {
-        detects[i].face.x /= factor;
-        detects[i].face.y /= factor;
-        detects[i].face.width  /= factor;
-        detects[i].face.height /= factor;
-    }
-}
 
-void filterDetections(Mat &image, vector<Detection> &detects, Size size,
-                      cnn::CNN &cnn, cnn::CNN &cnet,
-                      float thr = 0.5f ,
-                      float calibThr = 0.1f,
-                      bool calib  = true)
-{
-    for (size_t i = 0; i < detects.size(); i++)
-    {
-        Mat _resizedROI, _normROI, _netOutput;
-        Rect imageROI(0,0, image.cols, image.rows);
-        resize(image(detects[i].face & imageROI), _resizedROI, size);
-        Op::norm(_resizedROI, _normROI);
-        cnn.forward(_normROI, _netOutput);
-        
-        if (_netOutput.at<float>(0) > thr)
-        {
-            detects[i].score = _netOutput.at<float>(0);
-
-            if (calib)
-            {
-                Mat _cnetOutput;
-                cnet.forward(_normROI, _cnetOutput);
-                detects[i] = cnn::Op::applyTransformationCode(detects[i], _cnetOutput, .1f);
-            }
-        }
-        else
-        {
-            detects.erase(detects.begin() + i);
-            i--;
-        }
-    }
-}
 
 void displayResults(Mat &image, vector<Detection> &detections, const string wName = "default")
 {
@@ -105,22 +63,22 @@ int main(int, char**)
         params.KernelH = 12;
         params.KernelW = 12;
 
-        cnn::Op::cascade(resized, params, net12, net12c, outputs);
-        cnn::Op::nms(outputs, .3f);
+        cnn::faceDet::cascade(resized, params, net12, net12c, outputs);
+        cnn::faceDet::nms(outputs, .3f);
     
-        backProjectDetections(outputs, factor);
+        cnn::faceDet::backProjectDetections(outputs, factor);
     
         displayResults(image, outputs, "net12");
     
         // 24 net
-        filterDetections(image, outputs, Size(24,24), net24, net24c, .1f, .1f);
-        cnn::Op::nms(outputs, .3f);
+        cnn::faceDet::filterDetections(image, outputs, Size(24,24), net24, net24c, .1f, .1f);
+        cnn::faceDet::nms(outputs, .3f);
 
         displayResults(image, outputs, "net24");
 
         // 48 net
-        filterDetections(image, outputs, Size(48,48), net48, net48c, .1f, .1f, false);
-        cnn::Op::nms(outputs, .3f);
+        cnn::faceDet::filterDetections(image, outputs, Size(48,48), net48, net48c, .1f, .1f, false);
+        cnn::faceDet::nms(outputs, .3f);
     
         displayResults(image, outputs, "net48");
 

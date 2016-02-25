@@ -153,113 +153,12 @@ namespace cnn {
         friend ostream& operator<<(ostream &out, const CNN& w);
     };
 
+
+
+    
     class Op
     {
     public:
-
-        static Detection& applyTransformationCode(Detection &detection,const Mat &response, const float &thr)
-        {
-            struct _coords {
-                size_t s;
-                size_t x;
-                size_t y;
-            };
-            vector<_coords> trans;
-            for (size_t i = 0; i< response.rows * response.cols ; i++)
-            {
-                if (response.at<float>(i) > thr)
-                {
-                    _coords t = { i / 9 , (i / 3) % 3, i % 3 };
-                    trans.push_back(std::move(t));
-                }
-            }
-            
-            
-            vector<float> s = {0.83, 0.91, 1.0, 1.10, 1.21};
-            vector<float> x = {-0.17, 0.0, 0.17};
-            vector<float> y = {-0.17, 0.0, 0.17};
-            
-            float ts = 0.f, tx = 0.f, ty = 0.f;
-            
-            if (trans.size())
-            {
-                for (size_t i = 0; i < trans.size(); i++)
-                {
-                    _coords &_tr = trans[i];
-                    ts += s[_tr.s];
-                    tx += x[_tr.x];
-                    ty += y[_tr.y];
-                }
-                
-                ts /= trans.size();
-                tx /= trans.size();
-                ty /= trans.size();
-                //cout << ts << " " << tx << " " << ty << endl;
-                detection.face.x -= ((tx * detection.face.width)/ts);
-                detection.face.y -= ((ty * detection.face.height)/ts);
-                detection.face.width /= ts;
-                detection.face.width /= ts;
-            }
-            
-            return detection;
-        }
-
-        static void cascade(const Mat &image, cnn::CNNParam &params,
-                            cnn::CNN &net, cnn::CNN &cnet, vector<Detection> &rect,
-                            float threshold = 0.5f,
-                            float calibThr  = 0.1f)
-        {
-            for (size_t r = 0; r < image.rows - params.KernelH; r+= params.StrideH)
-            {
-                for (size_t c = 0; c < image.cols - params.KernelW; c+= params.StrideW)
-                {
-                    Rect roi(c,r,params.KernelW, params.KernelH);
-                    
-                    Mat normImg, netOutput;
-                    Op::norm(image(roi), normImg);
-                    net.forward(normImg, netOutput);
-                    
-                    if (netOutput.at<float>(0) > threshold)
-                    {
-                        
-                        Detection detection;
-                        detection.face  = roi;
-                        detection.score = netOutput.at<float>(0);
-                        
-                        Mat cnetOutput;
-                        cnet.forward(normImg, cnetOutput);
-                        applyTransformationCode(detection, cnetOutput, calibThr);
-                        rect.push_back(std::move(detection));
-                    }
-                }
-            }
-        }
-
-        static void nms(vector<Detection> &detections, const float &threshold)
-        {
-            sort(detections.begin(), detections.end(), [](const Detection &i, const Detection &j)
-                                    { return i.score > j.score;});
-
-            float tmp;
-            for (unsigned i = 0; i < detections.size(); i++)
-            {
-                for (unsigned j = i + 1; j < detections.size(); j++)
-                {
-                   if (
-                        (
-                         tmp = (float)(detections[i].face & detections[j].face).area() /
-                         ( detections[i].face.area() + detections[j].face.area() -
-                          (detections[i].face & detections[j].face).area() )
-                         )
-                        > threshold)
-
-                    {
-                        detections.erase(detections.begin() + j);
-                        --j;
-                    }
-                }
-            }
-        }
 
         static void CONV(InputArrayOfArrays input,
                          InputArrayOfArrays weights,
@@ -323,6 +222,158 @@ namespace cnn {
     };
 
 
+    class faceDet
+    {
+    public:
+        
+        static Detection& applyTransformationCode(Detection &detection,const Mat &response, const float &thr)
+        {
+            struct _coords {
+                size_t s;
+                size_t x;
+                size_t y;
+            };
+            vector<_coords> trans;
+            for (size_t i = 0; i< response.rows * response.cols ; i++)
+            {
+                if (response.at<float>(i) > thr)
+                {
+                    _coords t = { i / 9 , (i / 3) % 3, i % 3 };
+                    trans.push_back(std::move(t));
+                }
+            }
+
+
+            vector<float> s = {0.83, 0.91, 1.0, 1.10, 1.21};
+            vector<float> x = {-0.17, 0.0, 0.17};
+            vector<float> y = {-0.17, 0.0, 0.17};
+
+            float ts = 0.f, tx = 0.f, ty = 0.f;
+
+            if (trans.size())
+            {
+                for (size_t i = 0; i < trans.size(); i++)
+                {
+                    _coords &_tr = trans[i];
+                    ts += s[_tr.s];
+                    tx += x[_tr.x];
+                    ty += y[_tr.y];
+                }
+
+                ts /= trans.size();
+                tx /= trans.size();
+                ty /= trans.size();
+                //cout << ts << " " << tx << " " << ty << endl;
+                detection.face.x -= ((tx * detection.face.width)/ts);
+                detection.face.y -= ((ty * detection.face.height)/ts);
+                detection.face.width /= ts;
+                detection.face.width /= ts;
+            }
+
+            return detection;
+        }
+
+        static void cascade(const Mat &image, cnn::CNNParam &params,
+                            cnn::CNN &net, cnn::CNN &cnet, vector<Detection> &rect,
+                            float threshold = 0.5f,
+                            float calibThr  = 0.1f)
+        {
+            for (size_t r = 0; r < image.rows - params.KernelH; r+= params.StrideH)
+            {
+                for (size_t c = 0; c < image.cols - params.KernelW; c+= params.StrideW)
+                {
+                    Rect roi(c,r,params.KernelW, params.KernelH);
+
+                    Mat normImg, netOutput;
+                    Op::norm(image(roi), normImg);
+                    net.forward(normImg, netOutput);
+
+                    if (netOutput.at<float>(0) > threshold)
+                    {
+
+                        Detection detection;
+                        detection.face  = roi;
+                        detection.score = netOutput.at<float>(0);
+
+                        Mat cnetOutput;
+                        cnet.forward(normImg, cnetOutput);
+                        applyTransformationCode(detection, cnetOutput, calibThr);
+                        rect.push_back(std::move(detection));
+                    }
+                }
+            }
+        }
+
+        static void nms(vector<Detection> &detections, const float &threshold)
+        {
+            sort(detections.begin(), detections.end(), [](const Detection &i, const Detection &j)
+                 { return i.score > j.score;});
+
+            float tmp;
+            for (unsigned i = 0; i < detections.size(); i++)
+            {
+                for (unsigned j = i + 1; j < detections.size(); j++)
+                {
+                    if (
+                        (
+                         tmp = (float)(detections[i].face & detections[j].face).area() /
+                         ( detections[i].face.area() + detections[j].face.area() -
+                          (detections[i].face & detections[j].face).area() )
+                         )
+                        > threshold)
+
+                    {
+                        detections.erase(detections.begin() + j);
+                        --j;
+                    }
+                }
+            }
+        }
+
+        static void backProjectDetections(vector<Detection> &detects, const double &factor)
+        {
+            for (size_t i = 0 ; i < detects.size(); i++)
+            {
+                detects[i].face.x /= factor;
+                detects[i].face.y /= factor;
+                detects[i].face.width  /= factor;
+                detects[i].face.height /= factor;
+            }
+        }
+
+        static void filterDetections(Mat &image, vector<Detection> &detects, Size size,
+                                     cnn::CNN &cnn, cnn::CNN &cnet,
+                                     float thr = 0.5f ,
+                                     float calibThr = 0.1f,
+                                     bool calib  = true)
+        {
+            for (size_t i = 0; i < detects.size(); i++)
+            {
+                Mat _resizedROI, _normROI, _netOutput;
+                Rect imageROI(0,0, image.cols, image.rows);
+                resize(image(detects[i].face & imageROI), _resizedROI, size);
+                Op::norm(_resizedROI, _normROI);
+                cnn.forward(_normROI, _netOutput);
+
+                if (_netOutput.at<float>(0) > thr)
+                {
+                    detects[i].score = _netOutput.at<float>(0);
+
+                    if (calib)
+                    {
+                        Mat _cnetOutput;
+                        cnet.forward(_normROI, _cnetOutput);
+                        detects[i] = applyTransformationCode(detects[i], _cnetOutput, .1f);
+                    }
+                }
+                else
+                {
+                    detects.erase(detects.begin() + i);
+                    i--;
+                }
+            }
+        }
+    };
 
 
 
