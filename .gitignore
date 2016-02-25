@@ -30,3 +30,5 @@
 
 # Debug files
 *.dSYM/
+src/build
+src2/build
