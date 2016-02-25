@@ -350,8 +350,8 @@ static void createCNN48(const string &filename, cnn::CNN &net)
     params.KernelW = 3;
     params.KernelD = 1;
     params.NLayers = 1;
-    createMAXPOOL(module3, params);
-    net.addLayer(module3);
+    createMAXPOOL(module2, params);
+    net.addLayer(module2);
 
     createRELU(module3);
     net.addLayer(module3);

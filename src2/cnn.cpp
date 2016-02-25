@@ -187,6 +187,7 @@ void CNN::forward(InputArray input, OutputArray output)
         if (layer.type == cnn::CNNOpType::CONV)
         {
             cnn::Op::CONV(_input, layer.weights, _tmp, layer.bias,
+                          layer.params[cnn::CNNStringParam::KernelD],
                           layer.params[cnn::CNNStringParam::StrideW],
                           layer.params[cnn::CNNStringParam::StrideH],
                           layer.params[cnn::CNNStringParam::PadW],
@@ -380,22 +381,42 @@ void Op::CONV(InputArrayOfArrays input,     //const vector<Mat> &
               InputArrayOfArrays weights,  // const vector<Mat> &
               OutputArrayOfArrays   output,
               vector<float> &bias,
-              int strideH,
-              int strideV,
-              int paddH,
-              int paddV )
+              const int kernelDepth,
+              const int strideH,
+              const int strideV,
+              const int paddH,
+              const int paddV )
 {
     vector<Mat> _weights, _input;
     input.getMatVector(_input);
     weights.getMatVector(_weights);
 
     if (output.needed())
-        output.create(_weights.size(),1, CV_32F);
+        output.create(_weights.size() / kernelDepth,1, CV_32F);
 
-    for (size_t i = 0; i < _weights.size(); i++)
+    vector<Mat> _conv(kernelDepth);
+    
+    for (size_t i = 0, _inputIdx = 0; i < _weights.size(); i++, _inputIdx++)
     {
-        conv(_input[0], weights.getMat(i), output.getMatRef(i),
-             bias[i], strideH, strideV, paddH, paddV);
+        
+        conv(_input[_inputIdx], weights.getMat(i), _conv[_inputIdx],
+             0, strideH, strideV, paddH, paddV);
+        
+        
+        if (_inputIdx == (kernelDepth - 1))
+        {
+            Mat &_output = output.getMatRef(i);
+            _output.create(_conv[0].size(), CV_32F);
+            for (size_t k = 0; k < _conv.size(); k++)
+            {
+                _output += _conv[k];
+            }
+            _output += bias[i];
+            
+          
+            _inputIdx = -1;
+        }
+        
     }
 
 }

@@ -157,24 +157,77 @@ namespace cnn {
     {
     public:
 
+        static Detection& applyTransformationCode(Detection &detection,const Mat &response, const float &thr)
+        {
+            struct _coords {
+                size_t s;
+                size_t x;
+                size_t y;
+            };
+            vector<_coords> trans;
+            for (size_t i = 0; i< response.rows * response.cols ; i++)
+            {
+                if (response.at<float>(i) > thr)
+                {
+                    _coords t = { i / 9 , (i / 3) % 3, i % 3 };
+                    trans.push_back(std::move(t));
+                }
+            }
+            
+            
+            vector<float> s = {0.83, 0.91, 1.0, 1.10, 1.21};
+            vector<float> x = {-0.17, 0.0, 0.17};
+            vector<float> y = {-0.17, 0.0, 0.17};
+            
+            float ts = 0.f, tx = 0.f, ty = 0.f;
+            
+            if (trans.size())
+            {
+                for (size_t i = 0; i < trans.size(); i++)
+                {
+                    _coords &_tr = trans[i];
+                    ts += s[_tr.s];
+                    tx += x[_tr.x];
+                    ty += y[_tr.y];
+                }
+                
+                ts /= trans.size();
+                tx /= trans.size();
+                ty /= trans.size();
+                //cout << ts << " " << tx << " " << ty << endl;
+                detection.face.x -= ((tx * detection.face.width)/ts);
+                detection.face.y -= ((ty * detection.face.height)/ts);
+                detection.face.width /= ts;
+                detection.face.width /= ts;
+            }
+            
+            return detection;
+        }
 
-
-        static void cascade(const Mat &image, cnn::CNNParam &params, cnn::CNN &net, vector<Detection> &rect)
+        static void cascade(const Mat &image, cnn::CNNParam &params,
+                            cnn::CNN &net, cnn::CNN &cnet, vector<Detection> &rect,
+                            float threshold = 0.5f,
+                            float calibThr  = 0.1f)
         {
             for (size_t r = 0; r < image.rows - params.KernelH; r+= params.StrideH)
             {
                 for (size_t c = 0; c < image.cols - params.KernelW; c+= params.StrideW)
                 {
-                    Mat test, output;
-                    Rect area(c,r,params.KernelW, params.KernelH);
-                    Op::norm(image(area), test);
-                    net.forward(test, output);
+                    Rect roi(c,r,params.KernelW, params.KernelH);
+                    
+                    Mat normImg, netOutput;
+                    Op::norm(image(roi), normImg);
+                    net.forward(normImg, netOutput);
 
-                    if (output.at<float>(0) > output.at<float>(1))
+                    if (netOutput.at<float>(0) > threshold)
                     {
                         Detection detection;
-                        detection.face  = area;
-                        detection.score = output.at<float>(0);
+                        detection.face  = roi;
+                        detection.score = netOutput.at<float>(0);
+                        
+                        Mat cnetOutput;
+                        cnet.forward(normImg, cnetOutput);
+                        applyTransformationCode(detection, cnetOutput, calibThr);
                         rect.push_back(std::move(detection));
                     }
                 }
@@ -211,10 +264,11 @@ namespace cnn {
                          InputArrayOfArrays weights,
                          OutputArrayOfArrays output,
                          vector<float> &bias,
-                         int strideW,
-                         int strideH,
-                         int paddW,
-                         int paddH );
+                         const int kernelD,
+                         const int strideW,
+                         const int strideH,
+                         const int paddW,
+                         const int paddH );
 
         static void MAX_POOL(InputArrayOfArrays  input,
                              OutputArrayOfArrays output,
