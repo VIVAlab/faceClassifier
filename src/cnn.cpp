@@ -241,9 +241,6 @@ void CNN::forward(InputArray input, OutputArray output)
             _input = std::move(_tmp);
         }
     }
-
-
-
 }
 
 
@@ -369,6 +366,7 @@ ostream& cnn::operator<<(ostream &out, const CNNLayer& w)
 
     return out;
 }
+
 ostream& cnn::operator<<(ostream &out, const CNN& w)
 {
     cout << CNNLabel::NAME    << ": \t\t"<< w._name << endl;
@@ -376,8 +374,6 @@ ostream& cnn::operator<<(ostream &out, const CNN& w)
     cout << CNNLabel::LAYERS  << ": \t[" << w._layers << "]" << endl;
     return out;
 }
-
-
 
 void Op::CONV(InputArrayOfArrays input,     //const vector<Mat> &
               InputArrayOfArrays weights,  // const vector<Mat> &
@@ -424,6 +420,7 @@ void Op::CONV(InputArrayOfArrays input,     //const vector<Mat> &
     }
 
 }
+
 void Op::MAX_POOL(InputArrayOfArrays  input,
                   OutputArrayOfArrays output,
                   int width,
@@ -580,7 +577,6 @@ void Op::norm(InputArray input,
     }
     merge(layers, output);
 }
-
 
 void Op::max_pool(InputArray input,
                   OutputArray output,

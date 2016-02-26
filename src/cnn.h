@@ -309,14 +309,13 @@ namespace cnn {
             sort(detections.begin(), detections.end(), [](const Detection &i, const Detection &j)
                  { return i.score > j.score;});
 
-            float tmp;
             for (unsigned i = 0; i < detections.size(); i++)
             {
                 for (unsigned j = i + 1; j < detections.size(); j++)
                 {
                     if (
                         (
-                         tmp = (float)(detections[i].face & detections[j].face).area() /
+                         (float)(detections[i].face & detections[j].face).area() /
                          ( detections[i].face.area() + detections[j].face.area() -
                           (detections[i].face & detections[j].face).area() )
                          )
@@ -328,6 +327,7 @@ namespace cnn {
                     }
                 }
             }
+            
         }
 
         static void backProjectDetections(vector<Detection> &detects, const double &factor)
