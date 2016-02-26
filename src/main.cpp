@@ -53,7 +53,7 @@ int main(int, char**)
         loadNet(files[5], net48c);
 
         double winSize = 12.;
-        double minFaceSize = 55;
+        double minFaceSize = 72;
         double factor = winSize/minFaceSize;
         resize(image, resized, Size(0,0), factor, factor, INTER_AREA);
 
@@ -65,24 +65,24 @@ int main(int, char**)
         params.KernelH = 12;
         params.KernelW = 12;
 
-        cnn::faceDet::cascade(resized, params, net12, net12c, outputs);
+        cnn::faceDet::cascade(resized, params, net12, net12c, outputs, .5f, .1f);
     
         cnn::faceDet::backProjectDetections(outputs, factor);
         displayResults(image, outputs, "net12");
     
-        cnn::faceDet::nms(outputs, .2f);
-        
-        displayResults(image, outputs, "net12 after nms");
+//        cnn::faceDet::nms(outputs, .2f);
+    
+        // displayResults(image, outputs, "net12 after nms");
     
         // 24 net
-        cnn::faceDet::filterDetections(image, outputs, Size(24,24), net24, net24c, .05f, .1f);
-        cnn::faceDet::nms(outputs, .5f);
+        cnn::faceDet::filterDetections(image, outputs, Size(24,24), net24, net24c, .5f, .1f);
+//        cnn::faceDet::nms(outputs, .5f);
 
         displayResults(image, outputs, "net24");
 
         // 48 net
-        cnn::faceDet::filterDetections(image, outputs, Size(48,48), net48, net48c, .00f, .1f);
-        cnn::faceDet::nms(outputs, .3f);
+        cnn::faceDet::filterDetections(image, outputs, Size(48,48), net48, net48c, .5f, .1f);
+//        cnn::faceDet::nms(outputs, .3f);
 
         displayResults(image, outputs, "net48");
         waitKey();
