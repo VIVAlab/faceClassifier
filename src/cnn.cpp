@@ -321,20 +321,6 @@ void CNN::read(const FileNode &node)
     }
 }
 
-void CNN::save(const string &filename)
-{
-    FileStorage fs(filename, FileStorage::WRITE);
-    fs << CNNLabel::CNN << *this;
-    fs.release();
-}
-
-void CNN::load(const string &filename)
-{
-    FileStorage fs(filename, FileStorage::READ);
-    fs[cnn::CNNLabel::CNN] >> *this;
-    fs.release();
-}
-
 
 
 ostream& cnn::operator<<(ostream &out, const CNNLayer& w)

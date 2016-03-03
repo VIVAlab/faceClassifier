@@ -146,8 +146,6 @@ namespace cnn {
 
         void forward(InputArray input, OutputArray output);
 
-        void load(const string &filename);
-        void save(const string &filename);
         
         
         friend ostream& operator<<(ostream &out, const CNN& w);

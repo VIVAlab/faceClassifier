@@ -46,17 +46,36 @@ using namespace cv;
 using namespace cnn;
 
 
-static void loadNet(const string &filename, cnn::CNN &net)
+static void loadNet(const string &filename, cnn::CNN &net, bool binary = false)
 {
-    FileStorage fs(filename, FileStorage::READ);
-    fs["cnn"] >> net;
-    fs.release();
+    if (binary)
+    {
+        BFileStorage fs(filename + ".bin", BFileStorage::Mode::READ);
+        fs >> net;
+        fs.release();
+    }
+    else
+    {
+        FileStorage fs(filename, FileStorage::READ);
+        fs["cnn"] >> net;
+        fs.release();
+    }
 }
 
-static void  saveNet(const string &filename, cnn::CNN &net) {
-    FileStorage fs(filename, FileStorage::WRITE);
-    fs << "cnn" <<  net;
-    fs.release();
+static void  saveNet(const string &filename, cnn::CNN &net, bool binary = false)
+{
+    if (binary)
+    {
+        BFileStorage fs(filename + ".bin", BFileStorage::Mode::WRITE);
+        fs << net;
+        fs.release();
+    }
+    else
+    {
+        FileStorage fs(filename, FileStorage::WRITE);
+        fs << "cnn" <<  net;
+        fs.release();
+    }
 };
 
 
