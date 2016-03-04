@@ -34,7 +34,7 @@
 
  **************************************************************************************************
  **************************************************************************************************/
-
+#include <limits>
 #include "cnn.h"
 
 using namespace cnn;
@@ -220,11 +220,11 @@ void CNN::forward(InputArray input, OutputArray output)
 
         if (_debug)
         {
-            for (size_t i = 0; i < _input.size(); i++)
-            {
-                printf("%d %d\n", _input[i].rows, _input[i].cols);
-                cout << _input[i] <<  endl;
-            }
+//            for (size_t i = 0; i < _input.size(); i++)
+//            {
+//                printf("%d %d\n", _input[i].rows, _input[i].cols);
+//                cout << _input[i] <<  endl;
+//            }
             for (size_t i = 0; i < _tmp.size(); i++)
             {
                 printf("%d %d\n", _tmp[i].rows, _tmp[i].cols);
@@ -559,7 +559,12 @@ void Op::norm(InputArray input,
     split(input, layers);
     for (size_t l = 0; l < layers.size(); l++)
     {
-        layers[l] = (layers[l]-(_mean.val[l] + mean.val[l]))*stdev.val[l]/_stdev.val[l];
+        layers[l] = (layers[l]-(_mean.val[l] + mean.val[l]));
+
+        if (_stdev.val[l] == 0.f)
+            _stdev.val[l] = 1.f;
+
+        layers[l] = layers[l] * (stdev.val[l]/_stdev.val[l]);
     }
     merge(layers, output);
 }
@@ -579,7 +584,7 @@ void Op::max_pool(InputArray input,
     if (paddingH || paddingV)
         copyMakeBorder(input, _input, paddingV, paddingV,
                        paddingH, paddingH, BORDER_CONSTANT,
-                       Scalar::all(0));
+                       Scalar::all(std::numeric_limits<float>::lowest()));
     else
         _input = input.getMat();
 
@@ -592,7 +597,9 @@ void Op::max_pool(InputArray input,
         for (size_t col = 0, c = 0; col < newWidth; col++,  c+= strideH)
         {
             double _max;
-            minMaxIdx(_input(Rect(c, c, width, height)), NULL, &_max);
+
+            minMaxIdx(_input(Rect(c, r, width, height)), NULL, &_max);
+
             _output.at<float>(col, row) = static_cast<float>(_max);
         } 
 }
