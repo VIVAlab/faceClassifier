@@ -598,7 +598,7 @@ void Op::max_pool(InputArray input,
         {
             double _max;
 
-            minMaxIdx(_input(Rect(c, r, width, height)), NULL, &_max);
+            minMaxIdx(_input(Rect(r, c, width, height)), NULL, &_max);
 
             _output.at<float>(col, row) = static_cast<float>(_max);
         } 
