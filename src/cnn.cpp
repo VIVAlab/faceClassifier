@@ -569,6 +569,25 @@ void Op::norm(InputArray input,
     merge(layers, output);
 }
 
+void Op::normGlobal(InputArray input,
+                    OutputArray output)
+{
+    Scalar mean, stdev;
+    meanStdDev(input, mean, stdev);
+    vector<Mat> layers;
+    split(input, layers);
+    for (size_t l = 0; l < layers.size(); l++)
+    {
+        layers[l] = (layers[l]- mean.val[l]);
+
+        if (stdev.val[l] == 0.f)
+            stdev.val[l] = 1.f;
+
+        layers[l] = layers[l] / stdev.val[l];
+    }
+    merge(layers, output);
+}
+
 void Op::max_pool(InputArray input,
                   OutputArray output,
                   int width,

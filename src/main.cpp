@@ -10,10 +10,37 @@ using namespace std;
 
 void displayResults(Mat &image, vector<Detection> &detections, const string wName = "default")
 {
+
+
+
     Mat tmp = image.clone();
     for (size_t i = 0; i < detections.size(); i++)
+    {
         rectangle(tmp, detections[i].face.tl(),
-                         detections[i].face.br(), Scalar::all(255));
+                  detections[i].face.br(), Scalar::all(255));
+
+        string text = to_string(detections[i].score);
+        std::cout << i << ": " << detections[i].score << "\t\t|\t" <<
+                                  detections[i].face.x<< "\t" <<
+                                  detections[i].face.y<< " \t" <<
+                                  detections[i].face.width << "\t"<<
+                                  detections[i].face.height << endl;
+        int fontFace = FONT_HERSHEY_SCRIPT_SIMPLEX;
+        double fontScale = .4;
+        int thickness = 1;
+
+        int baseline=0;
+        Size textSize = getTextSize(text, fontFace,
+                                    fontScale, thickness, &baseline);
+        baseline += thickness;
+
+        Point textOrg(detections[i].face.tl().x ,
+                      detections[i].face.tl().y );
+
+        putText(tmp, text, textOrg, fontFace, fontScale,
+                Scalar::all(255), thickness, 8);
+
+    }
     imshow(wName, tmp);
     // waitKey();
 }
@@ -23,12 +50,16 @@ void displayResults(Mat &image, vector<Detection> &detections, const string wNam
 int main(int, char**)
 {
         // read .bin to .xml
-        // binToXML();
+       //  binToXML();
 
         string imageFilename = "../../../test/img/group1.jpg";
-        Mat image = imread(imageFilename, IMREAD_GRAYSCALE), resized;
+
+        Mat image = imread(imageFilename, IMREAD_GRAYSCALE), display, imageN, resized;
         image.convertTo(image, CV_32F);
         image = image / 255.f;
+        display = image.clone();
+
+        Op::normGlobal(image, imageN);
 
         vector<string> files = {
                 "../../../weights/12net.bin.xml",
@@ -55,8 +86,8 @@ int main(int, char**)
         double winSize = 12.;
         double minFaceSize = 72;
         double factor = winSize/minFaceSize;
-        resize(image, resized, Size(0,0), factor, factor, INTER_AREA);
 
+        resize(imageN, resized, Size(0,0), factor, factor, CV_INTER_AREA);
         // 12 net
         vector<Detection> outputs;
         cnn::CNNParam params;
@@ -65,26 +96,28 @@ int main(int, char**)
         params.KernelH = 12;
         params.KernelW = 12;
 
-        cnn::faceDet::cascade(resized, params, net12, net12c, outputs, .5f, .1f);
+
+
+        cnn::faceDet::cascade(resized, params, net12, net12c, outputs, 0.5f, .1f, false);
     
         cnn::faceDet::backProjectDetections(outputs, factor);
-        displayResults(image, outputs, "net12");
+        displayResults(display, outputs, "net12");
     
-//        cnn::faceDet::nms(outputs, .2f);
-    
-        // displayResults(image, outputs, "net12 after nms");
-    
-        // 24 net
-        cnn::faceDet::filterDetections(image, outputs, Size(24,24), net24, net24c, .5f, .1f);
-//        cnn::faceDet::nms(outputs, .5f);
-
-        displayResults(image, outputs, "net24");
-
-        // 48 net
-        cnn::faceDet::filterDetections(image, outputs, Size(48,48), net48, net48c, .5f, .1f);
-//        cnn::faceDet::nms(outputs, .3f);
-
-        displayResults(image, outputs, "net48");
+////        cnn::faceDet::nms(outputs, .2f);
+//    
+//        // displayResults(image, outputs, "net12 after nms");
+//    
+//        // 24 net
+//        cnn::faceDet::filterDetections(image, outputs, Size(24,24), net24, net24c, .5f, .1f);
+////        cnn::faceDet::nms(outputs, .5f);
+//
+//        displayResults(image, outputs, "net24");
+//
+//        // 48 net
+//        cnn::faceDet::filterDetections(image, outputs, Size(48,48), net48, net48c, .5f, .1f);
+////        cnn::faceDet::nms(outputs, .3f);
+//
+//        displayResults(image, outputs, "net48");
         waitKey();
 
         return 0;
