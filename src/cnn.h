@@ -209,6 +209,11 @@ namespace cnn {
                          Scalar mean = Scalar::all(0),
                          Scalar stdev=Scalar::all(1));
 
+        static void normGlobal(InputArray input,
+                               OutputArray output);
+
+
+        
         static void max_pool(InputArray input,
                              OutputArray output,
                              int width,
@@ -271,31 +276,35 @@ namespace cnn {
             return detection;
         }
 
-        static void cascade(const Mat &image, cnn::CNNParam &params,
-                            cnn::CNN &net, cnn::CNN &cnet, vector<Detection> &rect,
+        static void cascade(const Mat &image,
+                            cnn::CNNParam &params,
+                            cnn::CNN &net,
+                            cnn::CNN &cnet,
+                            vector<Detection> &rect,
                             float threshold = 0.5f,
-                            float calibThr  = 0.1f)
+                            float calibThr  = 0.1f,
+                            bool calib = true)
         {
-            for (size_t r = 0; r < image.rows - params.KernelH; r+= params.StrideH)
+            for (size_t r = 0; r <= image.rows - params.KernelH; r+= params.StrideH)
             {
-                for (size_t c = 0; c < image.cols - params.KernelW; c+= params.StrideW)
+                for (size_t c = 0; c <= image.cols - params.KernelW; c+= params.StrideW)
                 {
                     Rect roi(c,r,params.KernelW, params.KernelH);
 
-                    Mat normImg, netOutput;
-                    Op::norm(image(roi), normImg);
-                    net.forward(normImg, netOutput);
-
+                    Mat netOutput;
+                    net.forward(image(roi), netOutput);
                     if (netOutput.at<float>(0) > threshold)
                     {
 
                         Detection detection;
                         detection.face  = roi;
                         detection.score = netOutput.at<float>(0);
-
-                        Mat cnetOutput;
-                        cnet.forward(normImg, cnetOutput);
-                        applyTransformationCode(detection, cnetOutput, calibThr);
+                        if (calib)
+                        {
+                            Mat cnetOutput;
+                            cnet.forward(image(roi), cnetOutput);
+                            applyTransformationCode(detection, cnetOutput, calibThr);
+                        }
                         rect.push_back(std::move(detection));
                     }
                 }
