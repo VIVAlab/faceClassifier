@@ -50,7 +50,7 @@ void displayResults(Mat &image, vector<Detection> &detections, const string wNam
 int main(int, char**)
 {
         // read .bin to .xml
-       //  binToXML();
+//        binToXML();
 
         string imageFilename = "../../../test/img/group1.jpg";
 
@@ -84,40 +84,55 @@ int main(int, char**)
         loadNet(files[5], net48c);
 
         double winSize = 12.;
-        double minFaceSize = 72;
-        double factor = winSize/minFaceSize;
-
-        resize(imageN, resized, Size(0,0), factor, factor, CV_INTER_AREA);
-        // 12 net
+        double minFaceSize = 48;
+        double pyramidRate = 1.414;
+        double faceSize = minFaceSize;
+        double factor;
+    
         vector<Detection> outputs;
+        vector<Detection> g_outputs;
         cnn::CNNParam params;
         params.StrideH = 4;
         params.StrideW = 4;
         params.KernelH = 12;
         params.KernelW = 12;
+    
 
-
+    while (faceSize < min(image.rows, image.cols))
+    {
+        factor = winSize/faceSize;
+        
+        // 12 net
+        resize(imageN, resized, Size(0,0), factor, factor, INTER_AREA);
 
         cnn::faceDet::cascade(resized, params, net12, net12c, outputs, 0.5f, .1f, false);
     
         cnn::faceDet::backProjectDetections(outputs, factor);
+        cnn::faceDet::nms(outputs, .2f);
         displayResults(display, outputs, "net12");
     
-////        cnn::faceDet::nms(outputs, .2f);
-//    
-//        // displayResults(image, outputs, "net12 after nms");
-//    
-//        // 24 net
-//        cnn::faceDet::filterDetections(image, outputs, Size(24,24), net24, net24c, .5f, .1f);
-////        cnn::faceDet::nms(outputs, .5f);
-//
-//        displayResults(image, outputs, "net24");
-//
-//        // 48 net
-//        cnn::faceDet::filterDetections(image, outputs, Size(48,48), net48, net48c, .5f, .1f);
-////        cnn::faceDet::nms(outputs, .3f);
-//
-//        displayResults(image, outputs, "net48");
+        // 24 net
+        cnn::faceDet::filterDetections(image, outputs, Size(24,24), net24, net24c, .0000001f, .1f);
+        cnn::faceDet::nms(outputs, .5f);
+        displayResults(image, outputs, "net24");
+
+        // 48 net
+        cnn::faceDet::filterDetections(image, outputs, Size(48,48), net48, net48c, .1f, .1f);
+        displayResults(image, outputs, "net48");
+        
+        g_outputs.insert(g_outputs.end(), outputs.begin(), outputs.end());
+        
+        outputs.clear();
+        faceSize *= pyramidRate;
+        
+        waitKey();
+        destroyAllWindows();
+    }
+    
+        // global nms
+        cnn::faceDet::nms(g_outputs, .3f);
+
+        displayResults(image, g_outputs, "net48");
         waitKey();
 
         return 0;
