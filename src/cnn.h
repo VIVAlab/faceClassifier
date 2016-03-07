@@ -267,12 +267,12 @@ namespace cnn {
                 tx /= trans.size();
                 ty /= trans.size();
 //                cout << ts << " " << tx << " " << ty << endl;
-//                detection.face.x -= ((tx * detection.face.width)/ts);
-//                detection.face.y -= ((ty * detection.face.height)/ts);
-                detection.face.x -= (tx * detection.face.width + (ts - 1) * detection.face.width) / 2 / ts;
-                detection.face.y -= (ty * detection.face.height + (ts - 1) * detection.face.height) / 2 / ts;
+                detection.face.x -= ((tx * detection.face.width)/ts);
+                detection.face.y -= ((ty * detection.face.height)/ts);
+//                detection.face.x -= (tx * detection.face.width + (ts - 1) * detection.face.width) / 2 / ts;
+//                detection.face.y -= (ty * detection.face.height + (ts - 1) * detection.face.height) / 2 / ts;
                 detection.face.width /= ts;
-                detection.face.width /= ts;
+                detection.face.height /= ts;
             }
 
             return detection;

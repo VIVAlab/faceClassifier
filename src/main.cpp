@@ -105,7 +105,7 @@ int main(int, char**)
         // 12 net
         resize(imageN, resized, Size(0,0), factor, factor, INTER_AREA);
 
-        cnn::faceDet::cascade(resized, params, net12, net12c, outputs, 0.5f, .1f, false);
+        cnn::faceDet::cascade(resized, params, net12, net12c, outputs, 0.5f, .1f);
     
         cnn::faceDet::backProjectDetections(outputs, factor);
         cnn::faceDet::nms(outputs, .2f);
