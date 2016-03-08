@@ -229,7 +229,7 @@ namespace cnn {
     {
     public:
         
-        static Detection& applyTransformationCode(Detection &detection,const Mat &response, const float &thr)
+        static Detection& applyTransformationCode(Detection &detection,const Mat &response, const float thr)
         {
             struct _coords {
                 size_t s;
