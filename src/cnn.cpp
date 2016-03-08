@@ -425,11 +425,7 @@ void Op::FC(const vector<Mat> &input,
             vector<Mat> &output,
             size_t outputs)
 {
-
-
     output.resize(1);
-
-
     output[0].create(outputs, 1, CV_32F);
 
     for (size_t o_index = 0; o_index < outputs; o_index++)
@@ -485,7 +481,7 @@ void Op::conv(const Mat &input,
     for (size_t row = 0, r = 0; row < newHeight; row++, r+=strideV )
     for (size_t col = 0, c = 0; col < newWidth; col++,  c+= strideH)
     {
-        output.at<float>(col, row) = weight.dot(_input(Rect(c, r, weight.cols, weight.rows))) + bias;
+        output.at<float>(row, col) = weight.dot(_input(Rect(c, r, weight.cols, weight.rows))) + bias;
     }
 
 }
@@ -571,6 +567,6 @@ void Op::max_pool(const Mat &input,
 
             minMaxIdx(_input(Rect(c, r, width, height)), NULL, &_max);
 
-            output.at<float>(col, row) = static_cast<float>(_max);
+            output.at<float>(row, col) = static_cast<float>(_max);
         } 
 }
