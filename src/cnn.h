@@ -161,7 +161,7 @@ namespace cnn {
         static void CONV(const vector<Mat> &input,
                          const vector<Mat> &weights,
                          vector<Mat> &output,
-                         vector<float> &bias,
+                         const vector<float> &bias,
                          const int nLayers,
                          const int kernelD,
                          const int strideW,
@@ -177,7 +177,12 @@ namespace cnn {
                              int strideH ,
                              int paddingW ,
                              int paddingH);
-
+        static void FC2(const vector<Mat> &input,
+                       const vector<Mat> &weights,
+                       const vector<float> &bias,
+                       vector<Mat> &output,
+                       size_t outputs);
+        
         static void FC(const vector<Mat> &input,
                        const vector<Mat> &weights,
                        const vector<float> &bias,

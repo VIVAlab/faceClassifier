@@ -364,7 +364,7 @@ ostream& cnn::operator<<(ostream &out, const CNN& w)
 void Op::CONV(const vector<Mat> &input,
               const vector<Mat> &weights,
               vector<Mat> &output,
-              vector<float> &bias,
+              const vector<float> &bias,
               const int nLayers,
               const int kernelDepth,
               const int strideH,
@@ -439,6 +439,30 @@ void Op::FC(const vector<Mat> &input,
         }
         output[0].at<float>(o_index) = sum + bias[o_index];
     }
+}
+
+void Op::FC2(const vector<Mat> &input,
+            const vector<Mat> &weights,
+            const vector<float> &bias,
+            vector<Mat> &output,
+            size_t outputs)
+{
+    Op::CONV(input, weights, output, bias, outputs, weights.size()/outputs, 1, 1, 0, 0);
+
+//    output.clear();
+
+//    for (size_t o_index = 0; o_index < outputs; o_index++)
+//    {
+//        double sum = 0;
+//        for (size_t i_index = 0, w_index = o_index * input.size(); i_index < input.size(); i_index++, w_index++)
+//        {
+//            Mat tmp;
+//            multiply(input[i_index], weights[w_index], tmp);
+//            sum+= cv::sum(tmp)[0];
+//        }
+//
+//        //output.push_back(sum + bias[o_index]);
+//    }
 }
 void Op::SOFTMAX(const vector<Mat> &input,
                        vector<Mat> &output)
