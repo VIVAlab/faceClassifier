@@ -516,10 +516,10 @@ void Op::conv(InputArray input,
     output.create(Size(newWidth, newHeight), input.type());
     _output = output.getMat();
 
-    for (size_t row = 0; row < newHeight; row+=strideV )
-        for (size_t col = 0; col < newWidth; col += strideH)
+    for (size_t row = 0, r = 0; row < newHeight; row++, r+=strideV )
+        for (size_t col = 0, c = 0; col < newWidth; col++,  c+= strideH)
         {
-            _output.at<float>(col, row) = _weight.dot(_input(Rect(row, col,
+            _output.at<float>(col, row) = _weight.dot(_input(Rect(col, row,
                                                                   _weight.cols, _weight.rows))) + bias;
         }
 }
@@ -617,7 +617,7 @@ void Op::max_pool(InputArray input,
         {
             double _max;
 
-            minMaxIdx(_input(Rect(r, c, width, height)), NULL, &_max);
+            minMaxIdx(_input(Rect(c, r, width, height)), NULL, &_max);
 
             _output.at<float>(col, row) = static_cast<float>(_max);
         } 
