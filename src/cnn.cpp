@@ -519,7 +519,7 @@ void Op::conv(InputArray input,
     for (size_t row = 0, r = 0; row < newHeight; row++, r+=strideV )
         for (size_t col = 0, c = 0; col < newWidth; col++,  c+= strideH)
         {
-            _output.at<float>(col, row) = _weight.dot(_input(Rect(col, row,
+            _output.at<float>(col, row) = _weight.dot(_input(Rect(c, r,
                                                                   _weight.cols, _weight.rows))) + bias;
         }
 }
