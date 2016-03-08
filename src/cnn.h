@@ -158,9 +158,9 @@ namespace cnn {
     {
     public:
 
-        static void CONV(InputArrayOfArrays input,
-                         InputArrayOfArrays weights,
-                         OutputArrayOfArrays output,
+        static void CONV(const vector<Mat> &input,
+                         const vector<Mat> &weights,
+                         vector<Mat> &output,
                          vector<float> &bias,
                          const int nLayers,
                          const int kernelD,
@@ -169,8 +169,8 @@ namespace cnn {
                          const int paddW,
                          const int paddH );
 
-        static void MAX_POOL(InputArrayOfArrays  input,
-                             OutputArrayOfArrays output,
+        static void MAX_POOL(const vector<Mat> &input,
+                             vector<Mat> &output,
                              int width,
                              int height,
                              int strideW ,
@@ -178,44 +178,39 @@ namespace cnn {
                              int paddingW ,
                              int paddingH);
 
-        static void FC(InputArrayOfArrays input,
-                       InputArrayOfArrays weights,
-                       InputArray bias,
-                       OutputArrayOfArrays output,
+        static void FC(const vector<Mat> &input,
+                       const vector<Mat> &weights,
+                       const vector<float> &bias,
+                       vector<Mat> &output,
                        size_t outputs);
 
-        static void RELU(InputArrayOfArrays input,
-                         OutputArrayOfArrays output);
+        static void RELU(const vector<Mat> &input,
+                         vector<Mat> &output);
 
-        static void SOFTMAX(InputArrayOfArrays input,
-                            OutputArrayOfArrays output);
+        static void SOFTMAX(const vector<Mat> &input,
+                                  vector<Mat> &output);
 
-        static void softmax(InputArray input,
-                            OutputArray output);
+        static void softmax(const Mat &input,Mat &output);
 
-        static void conv(InputArray input,
-                         InputArray weights,
-                         OutputArray output,
+        static void conv(const Mat &input,
+                         const Mat &weight,
+                         Mat &output,
                          float bias = 0,
                          int strideW = 1,
                          int strideH = 1,
                          int paddingW = 0,
                          int paddingH = 0 );
 
-        static void relu(InputArray input, OutputArray output);
+        static void relu(const Mat &input, Mat &output);
 
-        static void norm(InputArray input,
-                         OutputArray output,
+        static void norm(const Mat &input,
+                         Mat &output,
                          Scalar mean = Scalar::all(0),
                          Scalar stdev=Scalar::all(1));
 
-        static void normGlobal(InputArray input,
-                               OutputArray output);
+        static void normGlobal(const Mat &input, Mat &output);
 
-
-        
-        static void max_pool(InputArray input,
-                             OutputArray output,
+        static void max_pool(const Mat &input, Mat &output,
                              int width,
                              int height,
                              int strideW = 1 ,

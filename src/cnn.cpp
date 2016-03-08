@@ -361,9 +361,9 @@ ostream& cnn::operator<<(ostream &out, const CNN& w)
     return out;
 }
 
-void Op::CONV(InputArrayOfArrays input,     //const vector<Mat> &
-              InputArrayOfArrays weights,  // const vector<Mat> &
-              OutputArrayOfArrays   output,
+void Op::CONV(const vector<Mat> &input,
+              const vector<Mat> &weights,
+              vector<Mat> &output,
               vector<float> &bias,
               const int nLayers,
               const int kernelDepth,
@@ -372,33 +372,27 @@ void Op::CONV(InputArrayOfArrays input,     //const vector<Mat> &
               const int paddH,
               const int paddV )
 {
-    vector<Mat> _weights, _input;
-    input.getMatVector(_input);
-    weights.getMatVector(_weights);
-
-    if (output.needed())
-        output.create(nLayers, 1, CV_32F);
-
+    output.resize(nLayers);
     vector<Mat> _conv(kernelDepth);
     
-    for (size_t i = 0, _inputIdx = 0, _layersInput = 0; i < _weights.size(); i++, _inputIdx++)
+    for (size_t i = 0, _inputIdx = 0, _layersInput = 0; i < weights.size(); i++, _inputIdx++)
     {
         
-        conv(_input[_inputIdx], weights.getMat(i), _conv[_inputIdx],
+        conv(input[_inputIdx], weights[i], _conv[_inputIdx],
              0, strideH, strideV, paddH, paddV);
         
         
         if (_inputIdx == (kernelDepth - 1))
         {
-            Mat &_output = output.getMatRef(_layersInput++);
-            _output.create(_conv[0].size(), CV_32F);
-            _conv[0].copyTo(_output);
+            output[_layersInput].create(_conv[0].size(), CV_32F);
+            _conv[0].copyTo(output[_layersInput]);
+
             for (size_t k = 1; k < _conv.size(); k++)
             {
-                _output += _conv[k];
+                output[_layersInput] += _conv[k];
             }
-            _output += bias[i];
-            
+            output[_layersInput] += bias[i];
+            _layersInput++;
           
             _inputIdx = -1;
         }
@@ -407,8 +401,8 @@ void Op::CONV(InputArrayOfArrays input,     //const vector<Mat> &
 
 }
 
-void Op::MAX_POOL(InputArrayOfArrays  input,
-                  OutputArrayOfArrays output,
+void Op::MAX_POOL(const vector<Mat> &input,
+                  vector<Mat> &output,
                   int width,
                   int height,
                   int strideH ,
@@ -416,140 +410,104 @@ void Op::MAX_POOL(InputArrayOfArrays  input,
                   int paddingH ,
                   int paddingV)
 {
-
-    vector<Mat> _input;
-    input.getMatVector(_input);
-
-    if (output.needed())
-        output.create(_input.size(),1, CV_32F);
-
-    for (size_t i = 0; i < _input.size(); i++)
+    output.resize(input.size());
+    for (size_t i = 0; i < input.size(); i++)
     {
-        max_pool(_input[i], output.getMatRef(i),
+        max_pool(input[i], output[i],
                  width, height, strideH, strideV, paddingH, paddingV);
     }
 }
 
 
-void Op::FC(InputArrayOfArrays input,
-            InputArrayOfArrays weights,
-            InputArray bias,
-            OutputArrayOfArrays output,
+void Op::FC(const vector<Mat> &input,
+            const vector<Mat> &weights,
+            const vector<float> &bias,
+            vector<Mat> &output,
             size_t outputs)
 {
 
-    vector<Mat> _input;
-    input.getMatVector(_input);
 
-    if (output.needed())
-        output.create(1, 1, CV_32F);
+    output.resize(1);
 
-    Mat &_output = output.getMatRef(0);
-    _output.create(outputs, 1, CV_32F);
-    Mat _bias   = bias.getMat();
+
+    output[0].create(outputs, 1, CV_32F);
 
     for (size_t o_index = 0; o_index < outputs; o_index++)
     {
         double sum = 0;
-        for (size_t i_index = 0, w_index = o_index * _input.size(); i_index < _input.size(); i_index++, w_index++)
+        for (size_t i_index = 0, w_index = o_index * input.size(); i_index < input.size(); i_index++, w_index++)
         {
             Mat tmp;
-            multiply(input.getMat(i_index), weights.getMat(w_index), tmp);
+            multiply(input[i_index], weights[w_index], tmp);
             sum+= cv::sum(tmp)[0];
         }
-        _output.at<float>(o_index) = sum + _bias.at<float>(o_index);
+        output[0].at<float>(o_index) = sum + bias[o_index];
     }
 }
-void Op::SOFTMAX(InputArrayOfArrays input,
-                 OutputArrayOfArrays output)
+void Op::SOFTMAX(const vector<Mat> &input,
+                       vector<Mat> &output)
 {
-    vector<Mat> _input;
-    input.getMatVector(_input);
-
-    if (output.needed())
-        output.create(_input.size(),1, CV_32F);
-
-    for (size_t i = 0; i < _input.size(); i++)
+    output.resize(input.size());
+    for (size_t i = 0; i < input.size(); i++)
     {
-        softmax(input.getMat(i), output.getMatRef(i));
+        softmax(input[i], output[i]);
     }
 }
 
-void Op::RELU(InputArrayOfArrays input,
-              OutputArrayOfArrays output)
+void Op::RELU(const vector<Mat> &input,
+              vector<Mat> &output)
 {
-    vector<Mat> _input;
-    input.getMatVector(_input);
+    output.resize(input.size());
 
-    if (output.needed())
-        output.create(_input.size(),1, CV_32F);
-
-    for (size_t i = 0; i < _input.size(); i++)
+    for (size_t i = 0; i < input.size(); i++)
     {
-        threshold(input.getMat(i), output.getMatRef(i), 0, 1, THRESH_TOZERO);
+        threshold(input[i], output[i], 0, 1, THRESH_TOZERO);
     }
 
 }
 
-void Op::conv(InputArray input,
-              InputArray weights,
-              OutputArray output,
-              float bias ,
-              int strideH ,
+void Op::conv(const Mat &input,
+              const Mat &weight,
+              Mat &output,
+              float bias,
+              int strideH,
               int strideV,
-              int paddingH ,
-              int paddingV )
+              int paddingH,
+              int paddingV)
 {
-
-    Mat _input, _weight, _output;
-    _weight = weights.getMat();
-
-    if (paddingH || paddingV)
-        copyMakeBorder(input, _input, paddingV, paddingV,
-                       paddingH, paddingH, BORDER_CONSTANT,
-                       Scalar::all(0));
-    else
-        _input = input.getMat();
-
-    int newWidth = ((_input.cols - _weight.cols)/strideH) + 1;
-    int newHeight= ((_input.rows - _weight.rows)/strideV) + 1;
+    Mat _input;
+    copyMakeBorder(input, _input, paddingV, paddingV,
+                   paddingH, paddingH, BORDER_CONSTANT,
+                   Scalar::all(0));
+    int newWidth = ((_input.cols - weight.cols)/strideH) + 1;
+    int newHeight= ((_input.rows - weight.rows)/strideV) + 1;
     output.create(Size(newWidth, newHeight), input.type());
-    _output = output.getMat();
-
     for (size_t row = 0, r = 0; row < newHeight; row++, r+=strideV )
-        for (size_t col = 0, c = 0; col < newWidth; col++,  c+= strideH)
-        {
-            _output.at<float>(col, row) = _weight.dot(_input(Rect(c, r,
-                                                                  _weight.cols, _weight.rows))) + bias;
-        }
+    for (size_t col = 0, c = 0; col < newWidth; col++,  c+= strideH)
+    {
+        output.at<float>(col, row) = weight.dot(_input(Rect(c, r, weight.cols, weight.rows))) + bias;
+    }
+
 }
 
-void Op::relu(InputArray input, OutputArray output)
+void Op::relu(const Mat &input, Mat &output)
 {
     threshold(input, output, 0, 1, THRESH_TOZERO);
 }
 
-void Op::softmax(InputArray input,
-                 OutputArray output)
+void Op::softmax(const Mat &input, Mat &output)
 {
-
-
-    Mat _input = input.getMat();
-    output.create(_input.size(), CV_32F);
-    Mat &_output= output.getMatRef();
-
+    output.create(input.size(), CV_32F);
     double _min, _max;
-    cv::minMaxIdx(_input, &_min, &_max);
-
-    exp(_input - _max, _output);
-
-    double _sum = sum(_output).val[0];
-    _output = _output / _sum;
+    cv::minMaxIdx(input, &_min, &_max);
+    exp(input - _max, output);
+    double _sum = sum(output).val[0];
+    output = output / _sum;
 
 }
 
-void Op::norm(InputArray input,
-              OutputArray output,
+void Op::norm(const Mat &input,
+              Mat &output,
               Scalar mean,
               Scalar stdev)
 {
@@ -569,8 +527,8 @@ void Op::norm(InputArray input,
     merge(layers, output);
 }
 
-void Op::normGlobal(InputArray input,
-                    OutputArray output)
+void Op::normGlobal(const Mat &input,
+                    Mat &output)
 {
     Scalar mean, stdev;
     meanStdDev(input, mean, stdev);
@@ -588,8 +546,8 @@ void Op::normGlobal(InputArray input,
     merge(layers, output);
 }
 
-void Op::max_pool(InputArray input,
-                  OutputArray output,
+void Op::max_pool(const Mat &input,
+                  Mat &output,
                   int width,
                   int height,
                   int strideH,
@@ -598,19 +556,13 @@ void Op::max_pool(InputArray input,
                   int paddingV)
 {
 
-    Mat _input, _output;
-
-    if (paddingH || paddingV)
-        copyMakeBorder(input, _input, paddingV, paddingV,
-                       paddingH, paddingH, BORDER_CONSTANT,
-                       Scalar::all(std::numeric_limits<float>::lowest()));
-    else
-        _input = input.getMat();
-
+    Mat _input;
+    copyMakeBorder(input, _input, paddingV, paddingV,
+                   paddingH, paddingH, BORDER_CONSTANT,
+                   Scalar::all(std::numeric_limits<float>::lowest()));
     int newWidth = ((_input.cols - width)/strideH) + 1;
     int newHeight= ((_input.rows - height)/strideV) + 1;
     output.create(Size(newWidth, newHeight), input.type());
-    _output = output.getMat();
 
     for (size_t row = 0, r = 0; row < newHeight; row++, r+=strideV )
         for (size_t col = 0, c = 0; col < newWidth; col++,  c+= strideH)
@@ -619,6 +571,6 @@ void Op::max_pool(InputArray input,
 
             minMaxIdx(_input(Rect(c, r, width, height)), NULL, &_max);
 
-            _output.at<float>(col, row) = static_cast<float>(_max);
+            output.at<float>(col, row) = static_cast<float>(_max);
         } 
 }

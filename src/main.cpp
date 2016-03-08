@@ -20,11 +20,11 @@ void displayResults(Mat &image, vector<Detection> &detections, const string wNam
                   detections[i].face.br(), Scalar::all(255));
 
         string text = to_string(detections[i].score);
-        std::cout << i << ": " << detections[i].score << "\t\t|\t" <<
-                                  detections[i].face.x<< "\t" <<
-                                  detections[i].face.y<< " \t" <<
-                                  detections[i].face.width << "\t"<<
-                                  detections[i].face.height << endl;
+//        std::cout << i << ": " << detections[i].score << "\t\t|\t" <<
+//                                  detections[i].face.x<< "\t" <<
+//                                  detections[i].face.y<< " \t" <<
+//                                  detections[i].face.width << "\t"<<
+//                                  detections[i].face.height << endl;
         int fontFace = FONT_HERSHEY_SCRIPT_SIMPLEX;
         double fontScale = .4;
         int thickness = 1;
