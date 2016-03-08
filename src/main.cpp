@@ -46,6 +46,60 @@ void displayResults(Mat &image, vector<Detection> &detections, const string wNam
 }
 
 
+void calibVisualize()
+{
+    Mat a = Mat::zeros(500,500, CV_8UC3);
+    const Rect b(100, 100,100,100);
+
+    vector<float> s = {0.83, 0.91, 1.0, 1.10, 1.21};
+    vector<float> x = {-0.17, 0.0, 0.17};
+    vector<float> y = {-0.17, 0.0, 0.17};
+
+
+    for (size_t si = 0; si < s.size(); si++)
+        for (size_t xi = 0; xi < x.size(); xi++)
+            for (size_t yi = 0; yi < y.size(); yi++)
+            {
+                float xnew = b.x + x[xi] * b.width * s[si] - (s[si] - 1) * b.width /2;
+                float ynew = b.y + y[yi] * b.height* s[si] - (s[si] - 1) * b.height/ 2;
+
+                float nwidth  =  b.width * s[si];
+                float nheight =  b.height * s[si];
+
+
+                float xnew2 = b.x + x[xi] * b.width * s[si] - (s[si] - 1) * b.width /2 + nwidth;
+                float ynew2 = b.y + y[yi] * b.height* s[si] - (s[si] - 1) * b.height/ 2 + nheight;
+
+                Rect r(xnew, ynew, nwidth, nheight);
+                rectangle( a, r.tl(), r.br(), Scalar::all(255));
+
+                //invert
+
+                //This is my program entry point
+                // and nwidth and nheight are the sizes of the detections
+                // xnew and ynew are the detection coordinates of the top left corner
+
+                nwidth = xnew2 - xnew ;
+                nheight= ynew2 - ynew ;
+
+                float xorg = xnew - x[xi] * nwidth  + (s[si] -1) * nwidth / 2 /s[si];
+                float yorg = ynew - y[yi] * nheight + (s[si] -1) * nheight/ 2 /s[si];
+
+                float owidth  = nwidth / s[si];
+                float oheight = nheight / s[si];
+
+
+
+                Rect r2(xorg, yorg, owidth, oheight);
+                rectangle( a, r2.tl(), r2.br(), Scalar(255,0,0));
+
+            }
+
+    rectangle(a, b.tl(), b.br(), Scalar(255,255,0));
+    imshow("transformations", a);
+    cvWaitKey();
+}
+
 
 int main(int, char**)
 {
@@ -96,7 +150,9 @@ int main(int, char**)
         params.StrideW = 4;
         params.KernelH = 12;
         params.KernelW = 12;
-    
+
+
+    //calibVisualize();
 
     while (faceSize < min(image.rows, image.cols))
     {
@@ -119,7 +175,7 @@ int main(int, char**)
         // 48 net
         cnn::faceDet::filterDetections(image, outputs, Size(48,48), net48, net48c, .1f, .1f);
         displayResults(image, outputs, "net48");
-        
+
         g_outputs.insert(g_outputs.end(), outputs.begin(), outputs.end());
         
         outputs.clear();
