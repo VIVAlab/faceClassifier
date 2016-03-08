@@ -142,18 +142,11 @@ namespace cnn {
         void read(istream &f);
         void read(const FileNode &node);
 
-
-
         void forward(InputArray input, OutputArray output);
 
-        
-        
         friend ostream& operator<<(ostream &out, const CNN& w);
     };
 
-
-
-    
     class Op
     {
     public:
@@ -208,11 +201,6 @@ namespace cnn {
 
         static void relu(const Mat &input, Mat &output);
 
-        static void norm(const Mat &input,
-                         Mat &output,
-                         Scalar mean = Scalar::all(0),
-                         Scalar stdev=Scalar::all(1));
-
         static void normGlobal(const Mat &input, Mat &output);
 
         static void max_pool(const Mat &input, Mat &output,
@@ -246,7 +234,6 @@ namespace cnn {
                 }
             }
 
-
             vector<float> s = {0.83, 0.91, 1.0, 1.10, 1.21};
             vector<float> x = {-0.17, 0.0, 0.17};
             vector<float> y = {-0.17, 0.0, 0.17};
@@ -267,10 +254,10 @@ namespace cnn {
                 tx /= trans.size();
                 ty /= trans.size();
 //                cout << ts << " " << tx << " " << ty << endl;
-                detection.face.x -= ((tx * detection.face.width)/ts);
-                detection.face.y -= ((ty * detection.face.height)/ts);
-//                detection.face.x -= (tx * detection.face.width + (ts - 1) * detection.face.width) / 2 / ts;
-//                detection.face.y -= (ty * detection.face.height + (ts - 1) * detection.face.height) / 2 / ts;
+//                detection.face.x -= ((tx * detection.face.width)/ts);
+//                detection.face.y -= ((ty * detection.face.height)/ts);
+                detection.face.x -= tx * detection.face.width + (ts - 1) * detection.face.width / 2 / ts;
+                detection.face.y -= ty * detection.face.height + (ts - 1) * detection.face.height / 2 / ts;
                 detection.face.width /= ts;
                 detection.face.height /= ts;
             }
@@ -361,8 +348,8 @@ namespace cnn {
                 Mat _resizedROI, _normROI, _netOutput;
                 Rect imageROI(0,0, image.cols, image.rows);
                 resize(image(detects[i].face & imageROI), _resizedROI, size);
-                Op::norm(_resizedROI, _normROI);
-                cnn.forward(_normROI, _netOutput);
+                //Op::norm(_resizedROI, _normROI);
+                cnn.forward(_resizedROI, _netOutput);
 
                 if (_netOutput.at<float>(0) > thr)
                 {
@@ -371,7 +358,7 @@ namespace cnn {
                     if (calib)
                     {
                         Mat _cnetOutput;
-                        cnet.forward(_normROI, _cnetOutput);
+                        cnet.forward(_resizedROI, _cnetOutput);
                         detects[i] = applyTransformationCode(detects[i], _cnetOutput, .1f);
                     }
                 }
@@ -383,10 +370,6 @@ namespace cnn {
             }
         }
     };
-
-
-
-
 
     static void writeB(ostream &fs, const CNNLayer &layer)
     {

@@ -526,27 +526,6 @@ void Op::softmax(const Mat &input, Mat &output)
 
 }
 
-void Op::norm(const Mat &input,
-              Mat &output,
-              Scalar mean,
-              Scalar stdev)
-{
-    Scalar _mean, _stdev;
-    meanStdDev(input, _mean, _stdev);
-    vector<Mat> layers;
-    split(input, layers);
-    for (size_t l = 0; l < layers.size(); l++)
-    {
-        layers[l] = (layers[l]-(_mean.val[l] + mean.val[l]));
-
-        if (_stdev.val[l] == 0.f)
-            _stdev.val[l] = 1.f;
-
-        layers[l] = layers[l] * (stdev.val[l]/_stdev.val[l]);
-    }
-    merge(layers, output);
-}
-
 void Op::normGlobal(const Mat &input,
                     Mat &output)
 {
