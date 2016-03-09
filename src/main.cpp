@@ -104,7 +104,7 @@ void calibVisualize()
 int main(int, char**)
 {
         // read .bin to .xml
-//        binToXML();
+        binToXML();
 
         string imageFilename = "../../../test/img/group1.jpg";
 
