@@ -10,9 +10,6 @@ using namespace std;
 
 void displayResults(Mat &image, vector<Detection> &detections, const string wName = "default")
 {
-
-
-
     Mat tmp = image.clone();
     for (size_t i = 0; i < detections.size(); i++)
     {
@@ -44,7 +41,6 @@ void displayResults(Mat &image, vector<Detection> &detections, const string wNam
     imshow(wName, tmp);
     // waitKey();
 }
-
 
 void calibVisualize()
 {
@@ -79,14 +75,15 @@ void calibVisualize()
                 // and nwidth and nheight are the sizes of the detections
                 // xnew and ynew are the detection coordinates of the top left corner
 
-                nwidth = xnew2 - xnew ;
-                nheight= ynew2 - ynew ;
+                float xorg = r.x - x[xi] * r.width  + (s[si] -1) * r.width / 2 /s[si];
+                float yorg = r.y - y[yi] * r.height + (s[si] -1) * r.height/ 2 /s[si];
 
-                float xorg = xnew - x[xi] * nwidth  + (s[si] -1) * nwidth / 2 /s[si];
-                float yorg = ynew - y[yi] * nheight + (s[si] -1) * nheight/ 2 /s[si];
-
-                float owidth  = nwidth / s[si];
-                float oheight = nheight / s[si];
+                float owidth  = r.width / s[si];
+                float oheight = r.height / s[si];
+                cout << xorg << " " << b.x << " "
+                     << yorg << " " << b.y << " "
+                     << owidth << " " << b.width << " "
+                << oheight << " " << b.height << endl;  ;
 
 
 
@@ -99,7 +96,6 @@ void calibVisualize()
     imshow("transformations", a);
     cvWaitKey();
 }
-
 
 int main(int, char**)
 {
@@ -152,39 +148,38 @@ int main(int, char**)
         params.KernelW = 12;
 
 
-    //calibVisualize();
+        //calibVisualize();
 
-    while (faceSize < min(image.rows, image.cols))
-    {
-        factor = winSize/faceSize;
+        while (faceSize < min(image.rows, image.cols))
+        {
+            factor = winSize/faceSize;
+            
+            // 12 net
+            resize(imageN, resized, Size(0,0), factor, factor, INTER_AREA);
+
+            cnn::faceDet::cascade(resized, params, net12, net12c, outputs, 0.5f, .1f, false);
+            cnn::faceDet::backProjectDetections(outputs, factor);
+            cnn::faceDet::nms(outputs, .2f);
+            displayResults(display, outputs, "net12");
         
-        // 12 net
-        resize(imageN, resized, Size(0,0), factor, factor, INTER_AREA);
+            // 24 net
+            cnn::faceDet::filterDetections(image, outputs, Size(24,24), net24, net24c, .0000001f, .1f);
+            cnn::faceDet::nms(outputs, .5f);
+            displayResults(image, outputs, "net24");
 
-        cnn::faceDet::cascade(resized, params, net12, net12c, outputs, 0.5f, .1f, false);
-    
-        cnn::faceDet::backProjectDetections(outputs, factor);
-        cnn::faceDet::nms(outputs, .2f);
-        displayResults(display, outputs, "net12");
-    
-        // 24 net
-        cnn::faceDet::filterDetections(image, outputs, Size(24,24), net24, net24c, .0000001f, .1f);
-        cnn::faceDet::nms(outputs, .5f);
-        displayResults(image, outputs, "net24");
+            // 48 net
+            cnn::faceDet::filterDetections(image, outputs, Size(48,48), net48, net48c, .1f, .1f);
+            displayResults(image, outputs, "net48");
 
-        // 48 net
-        cnn::faceDet::filterDetections(image, outputs, Size(48,48), net48, net48c, .1f, .1f);
-        displayResults(image, outputs, "net48");
-
-        g_outputs.insert(g_outputs.end(), outputs.begin(), outputs.end());
+            g_outputs.insert(g_outputs.end(), outputs.begin(), outputs.end());
+            
+            outputs.clear();
+            faceSize *= pyramidRate;
+            
+            waitKey();
+            destroyAllWindows();
+        }
         
-        outputs.clear();
-        faceSize *= pyramidRate;
-        
-        waitKey();
-        destroyAllWindows();
-    }
-    
         // global nms
         cnn::faceDet::nms(g_outputs, .3f);
 
