@@ -142,7 +142,7 @@ namespace cnn {
         void read(istream &f);
         void read(const FileNode &node);
 
-        void forward(InputArray input, OutputArray output);
+        void forward(const Mat &input, vector<Mat> &output);
 
         friend ostream& operator<<(ostream &out, const CNN& w);
     };
@@ -160,7 +160,7 @@ namespace cnn {
                          const int strideW,
                          const int strideH,
                          const int paddW,
-                         const int paddH );
+                         const int paddH);
 
         static void MAX_POOL(const vector<Mat> &input,
                              vector<Mat> &output,
@@ -187,6 +187,8 @@ namespace cnn {
 
         static void SOFTMAX(const vector<Mat> &input,
                                   vector<Mat> &output);
+        static void SOFTMAX2(const vector<Mat> &input,
+                             vector<Mat> &output);
 
         static void softmax(const Mat &input,Mat &output);
 
@@ -278,21 +280,31 @@ namespace cnn {
             {
                 for (size_t c = 0; c <= image.cols - params.KernelW; c+= params.StrideW)
                 {
-                    Rect roi(c,r,params.KernelW, params.KernelH);
+                    Rect roi(c, r, params.KernelW, params.KernelH);
 
-                    Mat netOutput;
+                    vector<Mat> netOutput;
+                    
                     net.forward(image(roi), netOutput);
-                    if (netOutput.at<float>(0) > threshold)
+                    
+                    
+                    if (netOutput[0].at<float>(0, 0) > threshold)
                     {
 
                         Detection detection;
                         detection.face  = roi;
-                        detection.score = netOutput.at<float>(0);
+                        detection.score = netOutput[0].at<float>(0, 0);
                         if (calib)
                         {
-                            Mat cnetOutput;
+                            vector<Mat> cnetOutput;
                             cnet.forward(image(roi), cnetOutput);
-                            applyTransformationCode(detection, cnetOutput, calibThr);
+                            
+                            Mat transformation(cnetOutput.size(), 1, CV_32F);
+                            for (size_t k = 0; k < cnetOutput.size(); k++)
+                            {
+                                transformation.at<float>(k) = cnetOutput[k].at<float>(0, 0);
+                            }
+                            
+                            applyTransformationCode(detection, transformation, calibThr);
                         }
                         rect.push_back(std::move(detection));
                     }
@@ -349,24 +361,24 @@ namespace cnn {
                 Rect imageROI(0,0, image.cols, image.rows);
                 resize(image(detects[i].face & imageROI), _resizedROI, size);
                 //Op::norm(_resizedROI, _normROI);
-                cnn.forward(_resizedROI, _netOutput);
-
-                if (_netOutput.at<float>(0) > thr)
-                {
-                    detects[i].score = _netOutput.at<float>(0);
-
-                    if (calib)
-                    {
-                        Mat _cnetOutput;
-                        cnet.forward(_resizedROI, _cnetOutput);
-                        detects[i] = applyTransformationCode(detects[i], _cnetOutput, .1f);
-                    }
-                }
-                else
-                {
-                    detects.erase(detects.begin() + i);
-                    i--;
-                }
+//                cnn.forward(_resizedROI, _netOutput);
+//
+//                if (_netOutput.at<float>(0) > thr)
+//                {
+//                    detects[i].score = _netOutput.at<float>(0);
+//
+//                    if (calib)
+//                    {
+//                        Mat _cnetOutput;
+//                        cnet.forward(_resizedROI, _cnetOutput);
+//                        detects[i] = applyTransformationCode(detects[i], _cnetOutput, .1f);
+//                    }
+//                }
+//                else
+//                {
+//                    detects.erase(detects.begin() + i);
+//                    i--;
+//                }
             }
         }
     };

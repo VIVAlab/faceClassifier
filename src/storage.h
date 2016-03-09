@@ -177,9 +177,9 @@ static void createCNN12(const string &filename, cnn::CNN &net)
     createRELU(module5);
     net.addLayer(module5);
 
-    params.KernelH = 16;
+    params.KernelH = 1;
     params.KernelW = 1;
-    params.KernelD = 1;
+    params.KernelD = 16;
     params.NLayers = 2;
     createFC(module6, params, f);
     net.addLayer(module6);
@@ -233,9 +233,9 @@ static void createCNN12Calibration(const string &filename, cnn::CNN &net)
     createRELU(module5);
     net.addLayer(module5);
 
-    params.KernelH = 128;
+    params.KernelH = 1;
     params.KernelW = 1;
-    params.KernelD = 1;
+    params.KernelD = 128;
     params.NLayers = 45;
     createFC(module6, params, f);
     net.addLayer(module6);

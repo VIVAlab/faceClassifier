@@ -173,7 +173,7 @@ void CNNLayer::read(const FileNode& node)
 }
 
 
-void CNN::forward(InputArray input, OutputArray output)
+void CNN::forward(const Mat &input, vector<Mat> &output)
 {
     vector<Mat> _input;
     split(input, _input);
@@ -181,6 +181,8 @@ void CNN::forward(InputArray input, OutputArray output)
     for (size_t i = 0; i < _network.size(); i++)
     {
         CNNLayer &layer = _layers[_map[_network[i]]];
+        
+        bool lastLayer = (i == _network.size() - 1);
         
         vector<Mat> _tmp;
         
@@ -201,7 +203,7 @@ void CNN::forward(InputArray input, OutputArray output)
         }
         else if (layer.type == cnn::CNNOpType::SOFTMAX)
         {
-            cnn::Op::SOFTMAX(_input, _tmp);
+            cnn::Op::SOFTMAX2(_input, _tmp);
         }
         else if (layer.type == cnn::CNNOpType::MAXPOOL)
         {
@@ -215,26 +217,20 @@ void CNN::forward(InputArray input, OutputArray output)
         }
         else if (layer.type == cnn::CNNOpType::FC)
         {
-            cnn::Op::FC(_input, layer.weights, layer.bias, _tmp, layer.params[cnn::CNNStringParam::NLayers]);
+            cnn::Op::FC2(_input, layer.weights, layer.bias, _tmp, layer.params[cnn::CNNStringParam::NLayers]);
         }
         
         if (_debug)
         {
-            //            for (size_t i = 0; i < _input.size(); i++)
-            //            {
-            //                printf("%d %d\n", _input[i].rows, _input[i].cols);
-            //                cout << _input[i] <<  endl;
-            //            }
-            for (size_t i = 0; i < _tmp.size(); i++)
+            for (size_t k = 0; k < _tmp.size(); k++)
             {
-                printf("%d %d\n", _tmp[i].rows, _tmp[i].cols);
-                cout << _tmp[i] << endl;
+                printf("%d %d\n", _tmp[k].rows, _tmp[k].cols);
+                cout << _tmp[k] << endl;
             }
         }
-        if (i == _network.size() - 1)
+        if (lastLayer)
         {
-            
-            _tmp[0].copyTo(output.getMatRef());
+            output = std::move(_tmp);
         }
         else
         {
@@ -370,7 +366,7 @@ void Op::CONV(const vector<Mat> &input,
               const int strideH,
               const int strideV,
               const int paddH,
-              const int paddV )
+              const int paddV)
 {
     output.resize(nLayers);
     vector<Mat> _conv(kernelDepth);
@@ -378,9 +374,10 @@ void Op::CONV(const vector<Mat> &input,
     for (size_t i = 0, _inputIdx = 0, _layersInput = 0; i < weights.size(); i++, _inputIdx++)
     {
         
+        
+
         conv(input[_inputIdx], weights[i], _conv[_inputIdx],
              0, strideH, strideV, paddH, paddV);
-        
         
         if (_inputIdx == (kernelDepth - 1))
         {
@@ -391,7 +388,7 @@ void Op::CONV(const vector<Mat> &input,
             {
                 output[_layersInput] += _conv[k];
             }
-            output[_layersInput] += bias[i];
+            output[_layersInput] += bias[_layersInput];
             _layersInput++;
             
             _inputIdx = -1;
@@ -448,21 +445,6 @@ void Op::FC2(const vector<Mat> &input,
              size_t outputs)
 {
     Op::CONV(input, weights, output, bias, outputs, weights.size()/outputs, 1, 1, 0, 0);
-    
-    //    output.clear();
-    
-    //    for (size_t o_index = 0; o_index < outputs; o_index++)
-    //    {
-    //        double sum = 0;
-    //        for (size_t i_index = 0, w_index = o_index * input.size(); i_index < input.size(); i_index++, w_index++)
-    //        {
-    //            Mat tmp;
-    //            multiply(input[i_index], weights[w_index], tmp);
-    //            sum+= cv::sum(tmp)[0];
-    //        }
-    //
-    //        //output.push_back(sum + bias[o_index]);
-    //    }
 }
 void Op::SOFTMAX(const vector<Mat> &input,
                  vector<Mat> &output)
@@ -472,6 +454,35 @@ void Op::SOFTMAX(const vector<Mat> &input,
     {
         softmax(input[i], output[i]);
     }
+}
+
+void Op::SOFTMAX2(const vector<Mat> &input,
+                        vector<Mat> &output)
+{
+    output.resize(input.size());
+    for (size_t k = 0; k < input.size(); k++)
+    {
+        output[k].create(input[k].size(), input[k].type());
+    }
+    
+    
+    for (size_t r = 0; r < input[0].rows; r++)
+        for (size_t c = 0; c < input[0].cols; c++)
+        {
+            Mat _vector(input.size(), 1, CV_32F), _vectorOutput;
+            
+            for (size_t k = 0; k < input.size(); k++)
+            {
+                _vector.at<float>(k) = input[k].at<float>(r,c);
+            }
+            
+            softmax(_vector, _vectorOutput);
+            
+            for (size_t k = 0; k < input.size(); k++)
+            {
+                output[k].at<float>(r,c) = _vectorOutput.at<float>(k);
+            }
+        }
 }
 
 void Op::RELU(const vector<Mat> &input,
