@@ -7,6 +7,10 @@ using namespace std;
 #include "storage.h"
 
 
+#include <ctime>
+#include <chrono>
+
+
 int main(int, char**)
 {
         // read .bin to .xml
@@ -47,8 +51,8 @@ int main(int, char**)
 
         double winSize = 12.;
         double minFaceSize = 30;
-        double maxFaceSize = 150;
-        double pyramidRate = 1.3;
+        double maxFaceSize = 180;
+        double pyramidRate = sqrt(2.0);
         double faceSize = minFaceSize;
         double factor;
 
@@ -57,6 +61,9 @@ int main(int, char**)
         params.KernelW = 12;
         vector<Detection> g_outputs;
 
+
+        std::chrono::time_point<std::chrono::system_clock> start, end;
+        start = std::chrono::system_clock::now();
         while (faceSize < min(image.rows, image.cols) && faceSize < maxFaceSize)
         {
             factor = winSize/faceSize;
@@ -68,13 +75,14 @@ int main(int, char**)
             cnn::faceDet::calibrate(resized, net12c, outputs, 0.1f);
             cnn::faceDet::nms(outputs, .1f);
             cnn::faceDet::backProject(outputs, factor);
-            cnn::faceDet::displayResults(display, outputs, "nms net12");
-            
-            waitKey();
+            cnn::faceDet::displayResults(display, outputs, "face size "+ to_string(faceSize));
             g_outputs.insert(g_outputs.end(), outputs.begin(), outputs.end());
             faceSize *= pyramidRate;
         }
-        cnn::faceDet::nms(g_outputs, .1f);
+        end = std::chrono::system_clock::now();
+        std::cout << (std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()/ 1000.f) << " seconds" << std::endl;
+
+        //cnn::faceDet::nms(g_outputs, .1f);
         cnn::faceDet::displayResults(display, g_outputs, "results");
 
         waitKey();
