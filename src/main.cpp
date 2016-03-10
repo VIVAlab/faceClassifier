@@ -7,110 +7,12 @@ using namespace std;
 #include "storage.h"
 
 
-
-void displayResults(Mat &image, vector<Detection> &detections, const string wName = "default")
-{
-    Mat tmp = image.clone();
-    for (size_t i = 0; i < detections.size(); i++)
-    {
-        rectangle(tmp, detections[i].face.tl(),
-                  detections[i].face.br(), Scalar::all(255));
-
-        string text = to_string(detections[i].score);
-//        std::cout << i << ": " << detections[i].score << "\t\t|\t" <<
-//                                  detections[i].face.x<< "\t" <<
-//                                  detections[i].face.y<< " \t" <<
-//                                  detections[i].face.width << "\t"<<
-//                                  detections[i].face.height << endl;
-        int fontFace = FONT_HERSHEY_SCRIPT_SIMPLEX;
-        double fontScale = .4;
-        int thickness = 1;
-
-        int baseline=0;
-        Size textSize = getTextSize(text, fontFace,
-                                    fontScale, thickness, &baseline);
-        baseline += thickness;
-
-        Point textOrg(detections[i].face.tl().x ,
-                      detections[i].face.tl().y );
-
-        putText(tmp, text, textOrg, fontFace, fontScale,
-                Scalar::all(255), thickness, 8);
-
-    }
-    imshow(wName, tmp);
-    // waitKey();
-}
-
-void calibVisualize()
-{
-    Mat a = Mat::zeros(500,500, CV_8UC3);
-    const Rect b(100, 100,100,100);
-
-    vector<float> s = {0.83, 0.91, 1.0, 1.10, 1.21};
-    vector<float> x = {-0.17, 0.0, 0.17};
-    vector<float> y = {-0.17, 0.0, 0.17};
-
-
-    for (size_t si = 0; si < s.size(); si++)
-        for (size_t xi = 0; xi < x.size(); xi++)
-            for (size_t yi = 0; yi < y.size(); yi++)
-            {
-                float xnew = b.x + x[xi] * b.width * s[si] - (s[si] - 1) * b.width /2;
-                float ynew = b.y + y[yi] * b.height* s[si] - (s[si] - 1) * b.height/ 2;
-
-                float nwidth  =  b.width * s[si];
-                float nheight =  b.height * s[si];
-
-
-                float xnew2 = b.x + x[xi] * b.width * s[si] - (s[si] - 1) * b.width /2 + nwidth;
-                float ynew2 = b.y + y[yi] * b.height* s[si] - (s[si] - 1) * b.height/ 2 + nheight;
-
-                Rect r(xnew, ynew, nwidth, nheight);
-                rectangle( a, r.tl(), r.br(), Scalar::all(255));
-
-                //invert
-
-                //This is my program entry point
-                // and nwidth and nheight are the sizes of the detections
-                // xnew and ynew are the detection coordinates of the top left corner
-
-                float xorg = r.x - x[xi] * r.width  + (s[si] -1) * r.width / 2 /s[si];
-                float yorg = r.y - y[yi] * r.height + (s[si] -1) * r.height/ 2 /s[si];
-
-                float owidth  = r.width / s[si];
-                float oheight = r.height / s[si];
-                cout << xorg << " " << b.x << " "
-                     << yorg << " " << b.y << " "
-                     << owidth << " " << b.width << " "
-                << oheight << " " << b.height << endl;  ;
-
-
-
-                Rect r2(xorg, yorg, owidth, oheight);
-                rectangle( a, r2.tl(), r2.br(), Scalar(255,0,0));
-
-            }
-
-    rectangle(a, b.tl(), b.br(), Scalar(255,255,0));
-    imshow("transformations", a);
-    cvWaitKey();
-}
-
 int main(int, char**)
 {
         // read .bin to .xml
-//        binToXML();
+        //binToXML();
 
-        string imageFilename = "../../../test/img/group1.jpg";
-
-        Mat image = imread(imageFilename, IMREAD_GRAYSCALE), display, imageN, resized;
-        image.convertTo(image, CV_32F);
-        image = image / 255.f;
-        display = image.clone();
-
-        Op::normGlobal(image, imageN);
-
+        /* Load networks and modules */
         vector<string> files = {
                 "../../../weights/12net.bin.xml",
                 "../../../weights/12cnet.bin.xml",
@@ -133,57 +35,48 @@ int main(int, char**)
         loadNet(files[4], net48);
         loadNet(files[5], net48c);
 
+        /* testing image for face detection */
+        string imageFilename = "../../../test/img/group1.jpg";
+
+        Mat image = imread(imageFilename, IMREAD_GRAYSCALE), display, imageN, resized;
+        image.convertTo(image, CV_32F);
+        image = image / 255.f;
+        display = image.clone();
+
+        Op::normGlobal(image, imageN);
+
         double winSize = 12.;
-        double minFaceSize = 48;
-        double pyramidRate = 1.414;
+        double minFaceSize = 30;
+        double maxFaceSize = 150;
+        double pyramidRate = 1.3;
         double faceSize = minFaceSize;
         double factor;
-    
-        vector<Detection> outputs;
-        vector<Detection> g_outputs;
+
         cnn::CNNParam params;
-        params.StrideH = 4;
-        params.StrideW = 4;
         params.KernelH = 12;
         params.KernelW = 12;
+        vector<Detection> g_outputs;
 
-
-        //calibVisualize();
-
-        while (faceSize < min(image.rows, image.cols))
+        while (faceSize < min(image.rows, image.cols) && faceSize < maxFaceSize)
         {
             factor = winSize/faceSize;
-            
-            // 12 net
             resize(imageN, resized, Size(0,0), factor, factor, INTER_AREA);
-
-            cnn::faceDet::cascade(resized, params, net12, net12c, outputs, 0.5f, .1f, false);
-            cnn::faceDet::backProjectDetections(outputs, factor);
-            cnn::faceDet::nms(outputs, .2f);
-            displayResults(display, outputs, "net12");
-        
-            // 24 net
-            cnn::faceDet::filterDetections(image, outputs, Size(24,24), net24, net24c, .0000001f, .1f);
-            cnn::faceDet::nms(outputs, .5f);
-            displayResults(image, outputs, "net24");
-
-            // 48 net
-            cnn::faceDet::filterDetections(image, outputs, Size(48,48), net48, net48c, .1f, .1f);
-            displayResults(image, outputs, "net48");
-
-            g_outputs.insert(g_outputs.end(), outputs.begin(), outputs.end());
             
-            outputs.clear();
-            faceSize *= pyramidRate;
+            vector<Detection> outputs;
+            cnn::faceDet::detect(resized, net12, params, outputs, .5f);
+            cnn::faceDet::nms(outputs, .1f);
+            cnn::faceDet::calibrate(resized, net12c, outputs, 0.1f);
+            cnn::faceDet::nms(outputs, .1f);
+            cnn::faceDet::backProject(outputs, factor);
+            cnn::faceDet::displayResults(display, outputs, "nms net12");
             
             waitKey();
-            destroyAllWindows();
+            g_outputs.insert(g_outputs.end(), outputs.begin(), outputs.end());
+            faceSize *= pyramidRate;
         }
-        
-        // global nms
-        cnn::faceDet::nms(g_outputs, .3f);
+        cnn::faceDet::nms(g_outputs, .1f);
+        cnn::faceDet::displayResults(display, g_outputs, "results");
 
-        displayResults(image, g_outputs, "net48");
         waitKey();
 
         return 0;

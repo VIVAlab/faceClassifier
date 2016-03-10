@@ -1,3 +1,4 @@
+
 /**************************************************************************************************
  **************************************************************************************************
 
@@ -142,7 +143,7 @@ namespace cnn {
         void read(istream &f);
         void read(const FileNode &node);
 
-        void forward(InputArray input, OutputArray output);
+        void forward(const Mat &input, vector<Mat> &output) const;
 
         friend ostream& operator<<(ostream &out, const CNN& w);
     };
@@ -160,7 +161,7 @@ namespace cnn {
                          const int strideW,
                          const int strideH,
                          const int paddW,
-                         const int paddH );
+                         const int paddH);
 
         static void MAX_POOL(const vector<Mat> &input,
                              vector<Mat> &output,
@@ -170,12 +171,6 @@ namespace cnn {
                              int strideH ,
                              int paddingW ,
                              int paddingH);
-        static void FC2(const vector<Mat> &input,
-                       const vector<Mat> &weights,
-                       const vector<float> &bias,
-                       vector<Mat> &output,
-                       size_t outputs);
-        
         static void FC(const vector<Mat> &input,
                        const vector<Mat> &weights,
                        const vector<float> &bias,
@@ -186,7 +181,7 @@ namespace cnn {
                          vector<Mat> &output);
 
         static void SOFTMAX(const vector<Mat> &input,
-                                  vector<Mat> &output);
+                             vector<Mat> &output);
 
         static void softmax(const Mat &input,Mat &output);
 
@@ -264,38 +259,105 @@ namespace cnn {
             return detection;
         }
 
-        static void cascade(const Mat &image,
-                            cnn::CNNParam &params,
-                            cnn::CNN &net,
-                            cnn::CNN &cnet,
-                            vector<Detection> &rect,
-                            float threshold = 0.5f,
-                            float calibThr  = 0.1f,
-                            bool calib = true)
+        static void findFaces(const Mat &img, vector<Detection> &detections, float width, float height, float threshold, float scale , bool smooth)
         {
-            for (size_t r = 0; r <= image.rows - params.KernelH; r+= params.StrideH)
-            {
-                for (size_t c = 0; c <= image.cols - params.KernelW; c+= params.StrideW)
+            Mat image;
+            if (smooth)
+                medianBlur(img, image, 3);
+
+
+            for (size_t r = 0; r < img.rows; r++)
+                for (size_t c = 0; c  < img.cols; c++)
                 {
-                    Rect roi(c,r,params.KernelW, params.KernelH);
+                    float response = 0;
 
-                    Mat netOutput;
-                    net.forward(image(roi), netOutput);
-                    if (netOutput.at<float>(0) > threshold)
+                    if (smooth)
+                        response = image.at<float>(r,c);
+                    else
+                        response = img.at<float>(r,c);
+
+
+                    if (response > threshold)
                     {
-
-                        Detection detection;
-                        detection.face  = roi;
-                        detection.score = netOutput.at<float>(0);
-                        if (calib)
-                        {
-                            Mat cnetOutput;
-                            cnet.forward(image(roi), cnetOutput);
-                            applyTransformationCode(detection, cnetOutput, calibThr);
-                        }
-                        rect.push_back(std::move(detection));
+                        Rect face(c * scale, r * scale, width, height );
+                        Detection det;
+                        det.face = face;
+                        det.score = response;
+                        detections.push_back(det);
                     }
                 }
+        }
+        static void calibVisualize()
+        {
+            Mat a = Mat::zeros(500,500, CV_8UC3);
+            const Rect b(100, 100,100,100);
+
+            vector<float> s = {0.83, 0.91, 1.0, 1.10, 1.21};
+            vector<float> x = {-0.17, 0.0, 0.17};
+            vector<float> y = {-0.17, 0.0, 0.17};
+
+
+            for (size_t si = 0; si < s.size(); si++)
+                for (size_t xi = 0; xi < x.size(); xi++)
+                    for (size_t yi = 0; yi < y.size(); yi++)
+                    {
+                        float xnew = b.x + x[xi] * b.width * s[si] - (s[si] - 1) * b.width /2;
+                        float ynew = b.y + y[yi] * b.height* s[si] - (s[si] - 1) * b.height/ 2;
+
+                        float nwidth  =  b.width * s[si];
+                        float nheight =  b.height * s[si];
+
+
+                        float xnew2 = b.x + x[xi] * b.width * s[si] - (s[si] - 1) * b.width /2 + nwidth;
+                        float ynew2 = b.y + y[yi] * b.height* s[si] - (s[si] - 1) * b.height/ 2 + nheight;
+
+                        Rect r(xnew, ynew, nwidth, nheight);
+                        rectangle( a, r.tl(), r.br(), Scalar::all(255));
+
+                        //invert
+
+                        //This is my program entry point
+                        // and nwidth and nheight are the sizes of the detections
+                        // xnew and ynew are the detection coordinates of the top left corner
+
+                        float xorg = r.x - x[xi] * r.width  + (s[si] -1) * r.width / 2 /s[si];
+                        float yorg = r.y - y[yi] * r.height + (s[si] -1) * r.height/ 2 /s[si];
+                        
+                        float owidth  = r.width / s[si];
+                        float oheight = r.height / s[si];
+                        
+                        
+                        
+                        Rect r2(xorg, yorg, owidth, oheight);
+                        rectangle( a, r2.tl(), r2.br(), Scalar(255,0,0));
+                        
+                    }
+            
+            rectangle(a, b.tl(), b.br(), Scalar(255,255,0));
+            imshow("Calibration Transforms", a);
+            waitKey();
+        }
+        static void detect(const Mat &img, const cnn::CNN &net, const cnn::CNNParam &params, vector<Detection> &detections, float thr, bool smooth = false, float scale = 2.f)
+        {
+            vector<Mat> scores;
+            net.forward(img, scores);
+            findFaces(scores[0], detections, params.KernelW, params.KernelH, thr, scale, smooth);
+        }
+
+        static void calibrate(const Mat &img, const cnn::CNN &net, vector<Detection> &detections, float calibThr)
+        {
+            Rect imgRoi(0,0,img.cols, img.rows);
+            for (size_t i = 0; i < detections.size(); i ++)
+            {
+                vector<Mat> calibOutput;
+                net.forward(img(detections[i].face & imgRoi), calibOutput);
+                Mat transformation(calibOutput.size(), 1, CV_32F);
+                for (size_t k = 0; k < calibOutput.size(); k++)
+                {
+                    transformation.at<float>(k) = calibOutput[k].at<float>(0, 0);
+                }
+
+                cnn::faceDet::applyTransformationCode(detections[i], transformation, calibThr);
             }
         }
 
@@ -303,6 +365,7 @@ namespace cnn {
         {
             sort(detections.begin(), detections.end(), [](const Detection &i, const Detection &j)
                  { return i.score > j.score;});
+
 
             for (unsigned i = 0; i < detections.size(); i++)
             {
@@ -314,7 +377,7 @@ namespace cnn {
                          ( detections[i].face.area() + detections[j].face.area() -
                           (detections[i].face & detections[j].face).area() )
                          )
-                        > threshold)
+                        >= threshold)
 
                     {
                         detections.erase(detections.begin() + j);
@@ -322,10 +385,11 @@ namespace cnn {
                     }
                 }
             }
-            
+
+
         }
 
-        static void backProjectDetections(vector<Detection> &detects, const double &factor)
+        static void backProject(vector<Detection> &detects, const double &factor)
         {
             for (size_t i = 0 ; i < detects.size(); i++)
             {
@@ -336,37 +400,33 @@ namespace cnn {
             }
         }
 
-        static void filterDetections(Mat &image, vector<Detection> &detects, Size size,
-                                     cnn::CNN &cnn, cnn::CNN &cnet,
-                                     float thr = 0.5f ,
-                                     float calibThr = 0.1f,
-                                     bool calib  = true)
+        static void displayResults(Mat &image, vector<Detection> &detections, const string wName = "default", bool wait = false)
         {
-            for (size_t i = 0; i < detects.size(); i++)
+            Mat tmp = image.clone();
+            for (size_t i = 0; i < detections.size(); i++)
             {
-                Mat _resizedROI, _normROI, _netOutput;
-                Rect imageROI(0,0, image.cols, image.rows);
-                resize(image(detects[i].face & imageROI), _resizedROI, size);
-                //Op::norm(_resizedROI, _normROI);
-                cnn.forward(_resizedROI, _netOutput);
+                rectangle(tmp, detections[i].face.tl(),
+                          detections[i].face.br(), Scalar::all(255));
 
-                if (_netOutput.at<float>(0) > thr)
-                {
-                    detects[i].score = _netOutput.at<float>(0);
+                string text = to_string(detections[i].score);
+                int fontFace = FONT_HERSHEY_SCRIPT_SIMPLEX;
+                double fontScale = .4;
+                int thickness = 1;
 
-                    if (calib)
-                    {
-                        Mat _cnetOutput;
-                        cnet.forward(_resizedROI, _cnetOutput);
-                        detects[i] = applyTransformationCode(detects[i], _cnetOutput, .1f);
-                    }
-                }
-                else
-                {
-                    detects.erase(detects.begin() + i);
-                    i--;
-                }
+                int baseline=0;
+                Size textSize = getTextSize(text, fontFace,
+                                            fontScale, thickness, &baseline);
+                baseline += thickness;
+
+                Point textOrg(detections[i].face.tl().x ,
+                              detections[i].face.tl().y );
+                
+                putText(tmp, text, textOrg, fontFace, fontScale,
+                        Scalar::all(255), thickness, 8);
+                
             }
+            imshow(wName, tmp);
+            if (wait) waitKey();
         }
     };
 
