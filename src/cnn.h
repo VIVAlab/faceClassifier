@@ -211,7 +211,21 @@ namespace cnn {
     class faceDet
     {
     public:
-        
+
+//        static void refine(const Mat &image, const cnn::CNN &network, const Size &size, vector<Detection> &detections, float thr)
+//        {
+//            Rect imgRoi(0,0, image.cols, image.rows);
+//            for (size_t i = 0; i < detections.size(); i++)
+//            {
+//                vector<Mat> scores;
+//                network.forward(resized, scores);
+//                if (scores[0].at<float>(0,0) > thr)
+//                {
+//                    detections[i].score = scores[0].at<float>(0,0);
+//                }
+//            }
+//        }
+
         static Detection& applyTransformationCode(Detection &detection,const Mat &response, const float thr)
         {
             struct _coords {
@@ -262,8 +276,14 @@ namespace cnn {
         static void findFaces(const Mat &img, vector<Detection> &detections, float width, float height, float threshold, float scale , bool smooth)
         {
             Mat image;
+
+
             if (smooth)
                 medianBlur(img, image, 3);
+
+//            static int i = 0;
+//            imwrite(to_string(i) + ".jpg", img*255);
+//            imwrite(to_string(i++) + "m.jpg", image*255);
 
 
             for (size_t r = 0; r < img.rows; r++)
@@ -426,7 +446,9 @@ namespace cnn {
                 
             }
             imshow(wName, tmp);
-            if (wait) waitKey();
+//            imwrite(wName + ".jpg", tmp);
+            if (wait)
+                waitKey();
         }
     };
 

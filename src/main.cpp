@@ -43,9 +43,10 @@ int main(int, char**)
         string imageFilename = "../../../test/img/group1.jpg";
 
         Mat image = imread(imageFilename, IMREAD_GRAYSCALE), display, imageN, resized;
+        display = image.clone();
         image.convertTo(image, CV_32F);
         image = image / 255.f;
-        display = image.clone();
+
 
         Op::normGlobal(image, imageN);
 
@@ -71,11 +72,11 @@ int main(int, char**)
             
             vector<Detection> outputs;
             cnn::faceDet::detect(resized, net12, params, outputs, .5f);
-            cnn::faceDet::nms(outputs, .1f);
+            //cnn::faceDet::nms(outputs, .1f);
             cnn::faceDet::calibrate(resized, net12c, outputs, 0.1f);
             cnn::faceDet::nms(outputs, .1f);
             cnn::faceDet::backProject(outputs, factor);
-            cnn::faceDet::displayResults(display, outputs, "face size "+ to_string(faceSize));
+            cnn::faceDet::displayResults(display, outputs, "Face Size "+ to_string((int)faceSize));
             g_outputs.insert(g_outputs.end(), outputs.begin(), outputs.end());
             faceSize *= pyramidRate;
         }
