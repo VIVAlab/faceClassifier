@@ -77,7 +77,7 @@ int main(int, char**)
 //            cnn::faceDet::nms(outputs, .1f);
             cnn::faceDet::calibrate(resized, net12c, outputs, 0.1f);
             cnn::faceDet::nms(outputs, .1f);
-            cnn::faceDet::backProject(outputs, factor, image.cols, image.rows);
+            cnn::faceDet::backProject(outputs, factor);
 //            cnn::faceDet::displayResults(display, outputs, "Face Size "+ to_string((int)faceSize));
             outputs12.insert(outputs12.end(), outputs.begin(), outputs.end());
             faceSize *= pyramidRate;
