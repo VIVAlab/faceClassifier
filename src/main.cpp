@@ -87,14 +87,14 @@ int main(int, char**)
     
         params.KernelH = 24;
         params.KernelW = 24;
-        cnn::faceDet::forwardDetection(image, outputs12, net24, net24c, params, outputs24, .1f, .5f, true);
+        cnn::faceDet::forwardDetection(image, outputs12, net24, net24c, params, outputs24, .001f, .5f, true);
         cnn::faceDet::nms(outputs24, .1f);
         cnn::faceDet::displayResults(display, outputs24, "24net");
     
     
         params.KernelH = 48;
         params.KernelW = 48;
-        cnn::faceDet::forwardDetection(image, outputs24, net48, net48c, params, outputs48, .5f, .5f, true);
+        cnn::faceDet::forwardDetection(image, outputs24, net48, net48c, params, outputs48, .99f, .5f, true);
         cnn::faceDet::nms(outputs48, .1f);
         cnn::faceDet::displayResults(display, outputs48, "results");
     
