@@ -234,6 +234,8 @@ namespace cnn {
                 size_t y;
             };
             vector<_coords> trans;
+            
+            
             for (size_t i = 0; i< response.rows * response.cols ; i++)
             {
                 if (response.at<float>(i) > thr)
@@ -265,9 +267,11 @@ namespace cnn {
 
                 detection.face.x = detection.face.x - tx * detection.face.width  + (ts - 1) * detection.face.width / 2 / ts;
                 detection.face.y = detection.face.y - ty * detection.face.height + (ts - 1) * detection.face.height / 2 / ts;
-
+                
                 detection.face.width  /= ts;
                 detection.face.height /= ts;
+                
+                
             }
 
             return detection;
@@ -363,6 +367,44 @@ namespace cnn {
             net.forward(img, scores);
             findFaces(scores[0], detections, params.KernelW, params.KernelH, thr, scale, smooth);
         }
+        
+        static void forwardDetection(const Mat &image, const vector<Detection> &detections, const cnn::CNN &net, const cnn::CNN &calibNet, const cnn::CNNParam &params, vector<Detection> &outputs, float thr, float calibThr, bool useCalibration = true)
+        {
+            Mat imageROI;
+            vector<Mat> score;
+            Mat img = Mat(params.KernelW, params.KernelH, CV_8UC3);
+                        
+            for (unsigned i = 0; i < detections.size(); i++)
+            {
+                Rect imgRoi(0,0,image.cols, image.rows);
+                imageROI = image(detections[i].face & imgRoi);
+                resize(imageROI, img, img.size(), 0, 0, INTER_AREA);
+
+                net.forward(img, score);
+                
+                if (score[0].at<float>(0,0) > thr)
+                {
+                    Detection detect;
+                    detect.face = detections[i].face;
+                    detect.score = score[0].at<float>(0,0);
+                    
+                    if (useCalibration)
+                    {
+                        vector<Mat> calibOutput;
+                        calibNet.forward(img, calibOutput);
+                        Mat transformation(calibOutput.size(), 1, CV_32F);
+                        for (size_t k = 0; k < calibOutput.size(); k++)
+                        {
+                            transformation.at<float>(k) = calibOutput[k].at<float>(0, 0);
+                        }
+                        
+                        cnn::faceDet::applyTransformationCode(detect, transformation, calibThr);
+                    }
+                    
+                    outputs.push_back(detect);
+                }
+            }
+        }
 
         static void calibrate(const Mat &img, const cnn::CNN &net, vector<Detection> &detections, float calibThr)
         {
@@ -413,10 +455,12 @@ namespace cnn {
         {
             for (size_t i = 0 ; i < detects.size(); i++)
             {
+                
                 detects[i].face.x /= factor;
                 detects[i].face.y /= factor;
                 detects[i].face.width  /= factor;
                 detects[i].face.height /= factor;
+                
             }
         }
 
