@@ -47,7 +47,6 @@ int main(int, char**)
         image.convertTo(image, CV_32F);
         image = image / 255.f;
 
-
         Op::normGlobal(image, imageN);
 
         double winSize = 12.;
@@ -60,31 +59,49 @@ int main(int, char**)
         cnn::CNNParam params;
         params.KernelH = 12;
         params.KernelW = 12;
-        vector<Detection> g_outputs;
+        vector<Detection> outputs;
+        vector<Detection> outputs12;
+        vector<Detection> outputs24;
+        vector<Detection> outputs48;
 
-
+    
         std::chrono::time_point<std::chrono::system_clock> start, end;
         start = std::chrono::system_clock::now();
+    
+    
         while (faceSize < min(image.rows, image.cols) && faceSize < maxFaceSize)
         {
             factor = winSize/faceSize;
             resize(imageN, resized, Size(0,0), factor, factor, INTER_AREA);
-            
-            vector<Detection> outputs;
             cnn::faceDet::detect(resized, net12, params, outputs, .5f);
             cnn::faceDet::nms(outputs, .1f);
             cnn::faceDet::calibrate(resized, net12c, outputs, 0.1f);
             cnn::faceDet::nms(outputs, .1f);
             cnn::faceDet::backProject(outputs, factor);
-            cnn::faceDet::displayResults(display, outputs, "Face Size "+ to_string((int)faceSize));
-            g_outputs.insert(g_outputs.end(), outputs.begin(), outputs.end());
+//            cnn::faceDet::displayResults(display, outputs, "Face Size "+ to_string((int)faceSize));
+            outputs12.insert(outputs12.end(), outputs.begin(), outputs.end());
             faceSize *= pyramidRate;
+            outputs.clear();
         }
+        cnn::faceDet::displayResults(display, outputs12, "12net");
+    
+        params.KernelH = 24;
+        params.KernelW = 24;
+        cnn::faceDet::forwardDetection(image, outputs12, net24, net24c, params, outputs24, .001f, .5f, true);
+        cnn::faceDet::nms(outputs24, .1f);
+        cnn::faceDet::displayResults(display, outputs24, "24net");
+    
+    
+        params.KernelH = 48;
+        params.KernelW = 48;
+        cnn::faceDet::forwardDetection(image, outputs24, net48, net48c, params, outputs48, .99f, .5f, true);
+        cnn::faceDet::nms(outputs48, .1f);
+        cnn::faceDet::displayResults(display, outputs48, "results");
+    
+    
+    
         end = std::chrono::system_clock::now();
         std::cout << (std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()/ 1000.f) << " seconds" << std::endl;
-
-        //cnn::faceDet::nms(g_outputs, .1f);
-        cnn::faceDet::displayResults(display, g_outputs, "results");
 
         waitKey();
 
