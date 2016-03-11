@@ -426,7 +426,7 @@ namespace cnn {
             for (size_t i = 0; i < detections.size(); i++)
             {
                 rectangle(tmp, detections[i].face.tl(),
-                          detections[i].face.br(), Scalar::all(255));
+                          detections[i].face.br(), Scalar(0,0,255), 1);
 
                 string text = to_string(detections[i].score);
                 int fontFace = FONT_HERSHEY_SCRIPT_SIMPLEX;
@@ -436,13 +436,13 @@ namespace cnn {
                 int baseline=0;
                 Size textSize = getTextSize(text, fontFace,
                                             fontScale, thickness, &baseline);
-                baseline += thickness;
+                //baseline += thickness;
 
                 Point textOrg(detections[i].face.tl().x ,
                               detections[i].face.tl().y );
                 
                 putText(tmp, text, textOrg, fontFace, fontScale,
-                        Scalar::all(255), thickness, 8);
+                        Scalar(255,0,0), thickness, 8);
                 
             }
             imshow(wName, tmp);

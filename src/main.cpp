@@ -14,7 +14,7 @@ using namespace std;
 int main(int, char**)
 {
         // read .bin to .xml
-        //binToXML();
+        binToXML();
 
         /* Load networks and modules */
         vector<string> files = {
@@ -41,9 +41,9 @@ int main(int, char**)
 
         /* testing image for face detection */
         string imageFilename = "../../../test/img/group1.jpg";
+        Mat display = imread(imageFilename);
+        Mat image = imread(imageFilename, IMREAD_GRAYSCALE), imageN, resized;
 
-        Mat image = imread(imageFilename, IMREAD_GRAYSCALE), display, imageN, resized;
-        display = image.clone();
         image.convertTo(image, CV_32F);
         image = image / 255.f;
 
@@ -72,7 +72,7 @@ int main(int, char**)
             
             vector<Detection> outputs;
             cnn::faceDet::detect(resized, net12, params, outputs, .5f);
-            //cnn::faceDet::nms(outputs, .1f);
+            cnn::faceDet::nms(outputs, .1f);
             cnn::faceDet::calibrate(resized, net12c, outputs, 0.1f);
             cnn::faceDet::nms(outputs, .1f);
             cnn::faceDet::backProject(outputs, factor);

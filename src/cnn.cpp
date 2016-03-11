@@ -41,7 +41,7 @@ using namespace cnn;
 
 const  string CNNLabel::NAME       = "name";
 const  string CNNLabel::PARAMS     = "params";
-const  string CNNLabel::WEIGHTS    = "weihts";
+const  string CNNLabel::WEIGHTS    = "weights";
 const  string CNNLabel::LAYERS     = "layers";
 const  string CNNLabel::BIAS       = "bias";
 const  string CNNLabel::TYPE       = "type";
