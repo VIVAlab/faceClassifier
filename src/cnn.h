@@ -212,288 +212,43 @@ namespace cnn {
     {
     public:
 
-//        static void refine(const Mat &image, const cnn::CNN &network, const Size &size, vector<Detection> &detections, float thr)
-//        {
-//            Rect imgRoi(0,0, image.cols, image.rows);
-//            for (size_t i = 0; i < detections.size(); i++)
-//            {
-//                vector<Mat> scores;
-//                network.forward(resized, scores);
-//                if (scores[0].at<float>(0,0) > thr)
-//                {
-//                    detections[i].score = scores[0].at<float>(0,0);
-//                }
-//            }
-//        }
+        static Detection& applyTransformationCode(Detection &detection,
+                                                  const Mat &response,
+                                                  const float thr);
 
-        static Detection& applyTransformationCode(Detection &detection,const Mat &response, const float thr)
-        {
-            struct _coords {
-                size_t s;
-                size_t x;
-                size_t y;
-            };
-            vector<_coords> trans;
-            
-            
-            for (size_t i = 0; i< response.rows * response.cols ; i++)
-            {
-                if (response.at<float>(i) > thr)
-                {
-                    _coords t = { i / 9 , (i / 3) % 3, i % 3 };
-                    trans.push_back(std::move(t));
-                }
-            }
+        static void calibVisualize();
+        static void detect(const Mat &img,
+                           const cnn::CNN &net,
+                           const cnn::CNNParam &params,
+                           vector<Detection> &detections,
+                           float thr,
+                           float scale = 2.f);
 
-            vector<float> s = {0.83, 0.91, 1.0, 1.10, 1.21};
-            vector<float> x = {-0.17, 0.0, 0.17};
-            vector<float> y = {-0.17, 0.0, 0.17};
-
-            float ts = 0.f, tx = 0.f, ty = 0.f;
-
-            if (trans.size())
-            {
-                for (size_t i = 0; i < trans.size(); i++)
-                {
-                    _coords &_tr = trans[i];
-                    ts += s[_tr.s];
-                    tx += x[_tr.x];
-                    ty += y[_tr.y];
-                }
-
-                ts /= trans.size();
-                tx /= trans.size();
-                ty /= trans.size();
-
-                detection.face.x = detection.face.x - tx * detection.face.width  + (ts - 1) * detection.face.width / 2 / ts;
-                detection.face.y = detection.face.y - ty * detection.face.height + (ts - 1) * detection.face.height / 2 / ts;
-                
-                detection.face.width  /= ts;
-                detection.face.height /= ts;
-                
-                
-            }
-
-            return detection;
-        }
-
-        static void findFaces(const Mat &img, vector<Detection> &detections, float width, float height, float threshold, float scale , bool smooth)
-        {
-            Mat image;
+        static void calibResults(const vector<Mat> &scores, Mat &results);
 
 
-            if (smooth)
-                medianBlur(img, image, 3);
+        static void forwardDetection(const Mat &image,
+                                     const vector<Detection> &detections,
+                                     const cnn::CNN &net,
+                                     const cnn::CNN &calibNet,
+                                     const cnn::CNNParam &params,
+                                     vector<Detection> &outputs,
+                                     float thr, float calibThr, bool useCalibration = true);
 
-//            static int i = 0;
-//            imwrite(to_string(i) + ".jpg", img*255);
-//            imwrite(to_string(i++) + "m.jpg", image*255);
+        static void calibrate(const Mat &img,
+                              const cnn::CNN &net,
+                              vector<Detection> &detections,
+                              float calibThr);
 
+        static void nms(vector<Detection> &detections,
+                        const float &threshold);
+        static void backProject(vector<Detection> &detects,
+                                const double &factor);
 
-            for (size_t r = 0; r < img.rows; r++)
-                for (size_t c = 0; c  < img.cols; c++)
-                {
-                    float response = 0;
-
-                    if (smooth)
-                        response = image.at<float>(r,c);
-                    else
-                        response = img.at<float>(r,c);
-
-
-                    if (response > threshold)
-                    {
-                        Rect face(c * scale, r * scale, width, height );
-                        Detection det;
-                        det.face = face;
-                        det.score = response;
-                        detections.push_back(det);
-                    }
-                }
-        }
-        static void calibVisualize()
-        {
-            Mat a = Mat::zeros(500,500, CV_8UC3);
-            const Rect b(100, 100,100,100);
-
-            vector<float> s = {0.83, 0.91, 1.0, 1.10, 1.21};
-            vector<float> x = {-0.17, 0.0, 0.17};
-            vector<float> y = {-0.17, 0.0, 0.17};
-
-
-            for (size_t si = 0; si < s.size(); si++)
-                for (size_t xi = 0; xi < x.size(); xi++)
-                    for (size_t yi = 0; yi < y.size(); yi++)
-                    {
-                        float xnew = b.x + x[xi] * b.width * s[si] - (s[si] - 1) * b.width /2;
-                        float ynew = b.y + y[yi] * b.height* s[si] - (s[si] - 1) * b.height/ 2;
-
-                        float nwidth  =  b.width * s[si];
-                        float nheight =  b.height * s[si];
-
-
-                        float xnew2 = b.x + x[xi] * b.width * s[si] - (s[si] - 1) * b.width /2 + nwidth;
-                        float ynew2 = b.y + y[yi] * b.height* s[si] - (s[si] - 1) * b.height/ 2 + nheight;
-
-                        Rect r(xnew, ynew, nwidth, nheight);
-                        rectangle( a, r.tl(), r.br(), Scalar::all(255));
-
-                        //invert
-
-                        //This is my program entry point
-                        // and nwidth and nheight are the sizes of the detections
-                        // xnew and ynew are the detection coordinates of the top left corner
-
-                        float xorg = r.x - x[xi] * r.width  + (s[si] -1) * r.width / 2 /s[si];
-                        float yorg = r.y - y[yi] * r.height + (s[si] -1) * r.height/ 2 /s[si];
-                        
-                        float owidth  = r.width / s[si];
-                        float oheight = r.height / s[si];
-                        
-                        
-                        
-                        Rect r2(xorg, yorg, owidth, oheight);
-                        rectangle( a, r2.tl(), r2.br(), Scalar(255,0,0));
-                        
-                    }
-            
-            rectangle(a, b.tl(), b.br(), Scalar(255,255,0));
-            imshow("Calibration Transforms", a);
-            waitKey();
-        }
-        static void detect(const Mat &img, const cnn::CNN &net, const cnn::CNNParam &params, vector<Detection> &detections, float thr, bool smooth = false, float scale = 2.f)
-        {
-            vector<Mat> scores;
-            net.forward(img, scores);
-            findFaces(scores[0], detections, params.KernelW, params.KernelH, thr, scale, smooth);
-        }
-        
-        static void forwardDetection(const Mat &image, const vector<Detection> &detections, const cnn::CNN &net, const cnn::CNN &calibNet, const cnn::CNNParam &params, vector<Detection> &outputs, float thr, float calibThr, bool useCalibration = true)
-        {
-            Mat imageROI;
-            vector<Mat> score;
-            Mat img = Mat(params.KernelW, params.KernelH, CV_8UC3);
-                        
-            for (unsigned i = 0; i < detections.size(); i++)
-            {
-                Rect imgRoi(0,0,image.cols, image.rows);
-                imageROI = image(detections[i].face & imgRoi);
-                resize(imageROI, img, img.size(), 0, 0, INTER_AREA);
-
-                net.forward(img, score);
-                
-                if (score[0].at<float>(0,0) > thr)
-                {
-                    Detection detect;
-                    detect.face = detections[i].face;
-                    detect.score = score[0].at<float>(0,0);
-                    
-                    if (useCalibration)
-                    {
-                        vector<Mat> calibOutput;
-                        calibNet.forward(img, calibOutput);
-                        Mat transformation(calibOutput.size(), 1, CV_32F);
-                        for (size_t k = 0; k < calibOutput.size(); k++)
-                        {
-                            transformation.at<float>(k) = calibOutput[k].at<float>(0, 0);
-                        }
-                        
-                        cnn::faceDet::applyTransformationCode(detect, transformation, calibThr);
-                    }
-                    
-                    outputs.push_back(detect);
-                }
-            }
-        }
-
-        static void calibrate(const Mat &img, const cnn::CNN &net, vector<Detection> &detections, float calibThr)
-        {
-            Rect imgRoi(0,0,img.cols, img.rows);
-            for (size_t i = 0; i < detections.size(); i ++)
-            {
-                vector<Mat> calibOutput;
-                net.forward(img(detections[i].face & imgRoi), calibOutput);
-                Mat transformation(calibOutput.size(), 1, CV_32F);
-                for (size_t k = 0; k < calibOutput.size(); k++)
-                {
-                    transformation.at<float>(k) = calibOutput[k].at<float>(0, 0);
-                }
-
-                cnn::faceDet::applyTransformationCode(detections[i], transformation, calibThr);
-            }
-        }
-
-        static void nms(vector<Detection> &detections, const float &threshold)
-        {
-            sort(detections.begin(), detections.end(), [](const Detection &i, const Detection &j)
-                 { return i.score > j.score;});
-
-
-            for (unsigned i = 0; i < detections.size(); i++)
-            {
-                for (unsigned j = i + 1; j < detections.size(); j++)
-                {
-                    if (
-                        (
-                         (float)(detections[i].face & detections[j].face).area() /
-                         ( detections[i].face.area() + detections[j].face.area() -
-                          (detections[i].face & detections[j].face).area() )
-                         )
-                        >= threshold)
-
-                    {
-                        detections.erase(detections.begin() + j);
-                        --j;
-                    }
-                }
-            }
-
-
-        }
-
-        static void backProject(vector<Detection> &detects, const double &factor)
-        {
-            for (size_t i = 0 ; i < detects.size(); i++)
-            {
-                
-                detects[i].face.x /= factor;
-                detects[i].face.y /= factor;
-                detects[i].face.width  /= factor;
-                detects[i].face.height /= factor;
-                
-            }
-        }
-
-        static void displayResults(Mat &image, vector<Detection> &detections, const string wName = "default", bool wait = false)
-        {
-            Mat tmp = image.clone();
-            for (size_t i = 0; i < detections.size(); i++)
-            {
-                rectangle(tmp, detections[i].face.tl(),
-                          detections[i].face.br(), Scalar(0,0,255), 1);
-
-                string text = to_string(detections[i].score);
-                int fontFace = FONT_HERSHEY_SCRIPT_SIMPLEX;
-                double fontScale = .4;
-                int thickness = 1;
-
-                int baseline=0;
-                Size textSize = getTextSize(text, fontFace,
-                                            fontScale, thickness, &baseline);
-                //baseline += thickness;
-
-                Point textOrg(detections[i].face.tl().x ,
-                              detections[i].face.tl().y );
-                
-                putText(tmp, text, textOrg, fontFace, fontScale,
-                        Scalar(255,0,0), thickness, 8);
-                
-            }
-            imshow(wName, tmp);
-//            imwrite(wName + ".jpg", tmp);
-            if (wait)
-                waitKey();
-        }
+        static void displayResults(Mat &image,
+                                   vector<Detection> &detections,
+                                   const string wName = "default",
+                                   bool wait = false);
     };
 
     static void writeB(ostream &fs, const CNNLayer &layer)
