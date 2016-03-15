@@ -512,7 +512,7 @@ static void createCNN48Calibration(const string &filename, cnn::CNN &net)
 }
 
 
-static void binToXML()
+static void createFaceDetectionCNNs()
 {
     vector<string> files = {
         "../../../weights/12net.bin",
