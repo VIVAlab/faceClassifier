@@ -13,8 +13,9 @@ using namespace std;
 
 int main(int, char**)
 {
-        // read .bin to .xml
+        // Read the model .bin files  to .xml
         createFaceDetectionCNNs();
+
 
         /* Load networks and modules */
         vector<string> files = {
