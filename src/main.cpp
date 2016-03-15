@@ -69,7 +69,7 @@ int main(int, char**)
         std::chrono::time_point<std::chrono::system_clock> start, end;
         start = std::chrono::system_clock::now();
     
-    
+        //Showing how to use it 
         while (faceSize < min(image.rows, image.cols) && faceSize < maxFaceSize)
         {
             factor = winSize/faceSize;
