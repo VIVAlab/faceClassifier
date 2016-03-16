@@ -49,7 +49,7 @@ using namespace cv;
 namespace cnn
 {
     void loadNet(const string &filename, cnn::CNN &net, bool binary = BINARY);
-    void  saveNet(const string &filename, cnn::CNN &net, bool binary = BINARY);
+    void saveNet(const string &filename, cnn::CNN &net, bool binary = BINARY);
     void readMats(size_t amount, size_t rows, size_t cols, size_t depth, ifstream &f, vector<Mat> &mats);
     void readVector(size_t amount, ifstream &f, vector<float> &vector);
     void createCNNLayer(cnn::CNNLayer &layer, const string &type, const CNNParam &params,  ifstream *file = nullptr);
@@ -431,7 +431,7 @@ namespace cnn
 
         f.close();
     }
-    static void createFaceDetectionCNNs()
+    static void createFaceCNNs()
     {
         vector<string> files = {
             "../../../weights/12net.bin",
