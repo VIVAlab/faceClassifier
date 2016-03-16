@@ -525,23 +525,25 @@ void Op::softmax(const Mat &input, Mat &output)
     
 }
 
-void Op::normGlobal(const Mat &input,
-                    Mat &output)
+
+void Op::normMeanStd(const Mat &input, Mat &output, const Scalar &mean, const Scalar &stdev)
 {
-    Scalar mean, stdev;
-    meanStdDev(input, mean, stdev);
     vector<Mat> layers;
     split(input, layers);
     for (size_t l = 0; l < layers.size(); l++)
     {
         layers[l] = (layers[l]- mean.val[l]);
-        
-        if (stdev.val[l] == 0.f)
-            stdev.val[l] = 1.f;
-        
-        layers[l] = layers[l] / stdev.val[l];
+
+        layers[l] = layers[l] / ( (stdev.val[l] == 0.f) ? 1 : stdev.val[l] );
     }
     merge(layers, output);
+}
+void Op::normGlobal(const Mat &input,
+                    Mat &output)
+{
+    Scalar mean, stdev;
+    meanStdDev(input, mean, stdev);
+    normMeanStd(input, output, mean, stdev);
 }
 
 void Op::max_pool(const Mat &input,
