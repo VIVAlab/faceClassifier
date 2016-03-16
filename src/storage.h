@@ -592,8 +592,6 @@ static void createFaceCNNs()
     saveNet(files[3] + extXML, net24c);
     saveNet(files[4] + extXML, net48);
     saveNet(files[5] + extXML, net48c);
-
-
 }
 
 static void createUpperBodyCNNs()
