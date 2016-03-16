@@ -12,6 +12,6 @@ local mdl = torch.load('model.net')
 module1_weight = mdl.modules[1].weight
 local module1_bias = mdl.modules[1].bias
 
-local file = torch.DiskFile('model.output.bin', 'w'):binary()
+local file = torch.DiskFile('modeloutput.bin', 'w'):binary()
 fwrite(module1_weight, file)
 fwrite(module1_bias, file)
