@@ -45,7 +45,6 @@ using namespace std;
 using namespace cv;
 using namespace cnn;
 
-
 static void loadNet(const string &filename, cnn::CNN &net, bool binary = false)
 {
     if (binary)
@@ -61,7 +60,6 @@ static void loadNet(const string &filename, cnn::CNN &net, bool binary = false)
         fs.release();
     }
 }
-
 static void  saveNet(const string &filename, cnn::CNN &net, bool binary = false)
 {
     if (binary)
@@ -77,9 +75,6 @@ static void  saveNet(const string &filename, cnn::CNN &net, bool binary = false)
         fs.release();
     }
 };
-
-
-
 static void readMats(size_t amount, size_t rows, size_t cols, size_t depth, ifstream &f, vector<Mat> &mats)
 {
     vector<float> buffer(amount*depth*rows*cols);
@@ -97,7 +92,6 @@ static void readVector(size_t amount, ifstream &f, vector<float> &vector)
     vector.resize(amount);
     f.read((char*)&vector[0], amount * sizeof(float));
 }
-
 static void createCNNLayer(cnn::CNNLayer &layer, const string &type, const CNNParam &params,  ifstream *file = nullptr)
 {
     layer.type = type;
@@ -133,6 +127,9 @@ static void createSOFTMAX(cnn::CNNLayer &layer)
 {
     layer.type = cnn::CNNOpType::SOFTMAX;
 }
+
+
+
 static void createCNN12(const string &filename, cnn::CNN &net)
 {
     ifstream f(filename, ios::in | ios::binary);
@@ -189,7 +186,6 @@ static void createCNN12(const string &filename, cnn::CNN &net)
 
     f.close();
 }
-
 static void createCNN12Calibration(const string &filename, cnn::CNN &net)
 {
     ifstream f(filename, ios::in | ios::binary);
@@ -245,7 +241,6 @@ static void createCNN12Calibration(const string &filename, cnn::CNN &net)
 
     f.close();
 }
-
 static void createCNN24(const string &filename, cnn::CNN &net)
 {
     ifstream f(filename, ios::in | ios::binary);
@@ -301,7 +296,6 @@ static void createCNN24(const string &filename, cnn::CNN &net)
 
     f.close();
 }
-
 static void createCNN24Calibration(const string &filename, cnn::CNN &net)
 {
     ifstream f(filename, ios::in | ios::binary);
@@ -357,7 +351,6 @@ static void createCNN24Calibration(const string &filename, cnn::CNN &net)
 
     f.close();
 }
-
 static void createCNN48(const string &filename, cnn::CNN &net)
 {
     ifstream f(filename, ios::in | ios::binary);
@@ -439,7 +432,6 @@ static void createCNN48(const string &filename, cnn::CNN &net)
 
     f.close();
 }
-
 static void createCNN48Calibration(const string &filename, cnn::CNN &net)
 {
     ifstream f(filename, ios::in | ios::binary);
@@ -510,9 +502,7 @@ static void createCNN48Calibration(const string &filename, cnn::CNN &net)
 
     f.close();
 }
-
-
-static void createFaceDetectionCNNs()
+static void createFaceCNNs()
 {
     vector<string> files = {
         "../../../weights/12net.bin",
