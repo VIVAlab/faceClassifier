@@ -359,6 +359,21 @@ ostream& cnn::operator<<(ostream &out, const CNN& w)
     return out;
 }
 
+void Op::bgr2yuv(const Mat &input, Mat &output)
+{
+    vector<Mat> bgr;
+    split(input, bgr);
+    vector<Mat> yuv(3);
+    for (size_t i = 0; i < yuv.size(); i++)
+        yuv[i].create(bgr[i].size(), CV_32F);
+
+        yuv[0] = 0.299   * bgr[2] + 0.587   * bgr[1] + 0.114   * bgr[0];
+        yuv[1] = -0.14713* bgr[2] - 0.28886 * bgr[1] + 0.436   * bgr[0];
+        yuv[2] = 0.615   * bgr[2] - 0.51499 * bgr[1] - 0.10001 * bgr[0];
+
+        merge(yuv, output);
+
+}
 void Op::CONV(const vector<Mat> &input,
               const vector<Mat> &weights,
               vector<Mat> &output,
@@ -510,23 +525,25 @@ void Op::softmax(const Mat &input, Mat &output)
     
 }
 
-void Op::normGlobal(const Mat &input,
-                    Mat &output)
+
+void Op::normMeanStd(const Mat &input, Mat &output, const Scalar &mean, const Scalar &stdev)
 {
-    Scalar mean, stdev;
-    meanStdDev(input, mean, stdev);
     vector<Mat> layers;
     split(input, layers);
     for (size_t l = 0; l < layers.size(); l++)
     {
         layers[l] = (layers[l]- mean.val[l]);
-        
-        if (stdev.val[l] == 0.f)
-            stdev.val[l] = 1.f;
-        
-        layers[l] = layers[l] / stdev.val[l];
+
+        layers[l] = layers[l] / ( (stdev.val[l] == 0.f) ? 1 : stdev.val[l] );
     }
     merge(layers, output);
+}
+void Op::normGlobal(const Mat &input,
+                    Mat &output)
+{
+    Scalar mean, stdev;
+    meanStdDev(input, mean, stdev);
+    normMeanStd(input, output, mean, stdev);
 }
 
 void Op::max_pool(const Mat &input,
@@ -560,7 +577,7 @@ void Op::max_pool(const Mat &input,
 
 
 
-Detection& cnn::faceDet::applyTransformationCode(Detection &detection,
+Detection& cnn::Alg::applyTransformationCode(Detection &detection,
                                           const Mat &response,
                                           const float thr)
 {
@@ -613,7 +630,7 @@ Detection& cnn::faceDet::applyTransformationCode(Detection &detection,
     return detection;
 }
 
-void cnn::faceDet::calibVisualize()
+void cnn::Alg::calibVisualize()
 {
     Mat a = Mat::zeros(500,500, CV_8UC3);
     const Rect b(100, 100,100,100);
@@ -661,25 +678,40 @@ void cnn::faceDet::calibVisualize()
     imshow("Calibration Transforms", a);
     waitKey();
 }
-void cnn::faceDet::detect(const Mat &img,
-                   const cnn::CNN &net,
-                   const cnn::CNNParam &params,
-                   vector<Detection> &detections,
-                   float thr,
-                   float scale)
+
+
+void cnn::Alg::forward(const Mat &img, const cnn::CNN &net, Mat &score, int layer)
 {
     vector<Mat> scores;
     net.forward(img, scores);
+    score = std::move(scores[layer]);
+}
 
-    //            static int i = 0;
-    //            imwrite(to_string(i) + ".jpg", img*255);
-    //            imwrite(to_string(i++) + "m.jpg", image*255);
+void cnn::Alg::heatMapFromScore(const Mat &score, Mat &heatmap, cv::Size size)
+{
+    if (size.width == 0 and size.height == 0)
+        size = score.size();
+    Mat scaled, adjusted;
+    resize(score, scaled, size, 0, 0, INTER_CUBIC);
+    scaled.convertTo(adjusted, CV_8UC1, 255);
+    applyColorMap(adjusted, heatmap, COLORMAP_JET);
+}
 
-    for (size_t r = 0; r < scores[0].rows; r++)
+void cnn::Alg::detect(const Mat &img,
+                      const cnn::CNN &net,
+                      const cnn::CNNParam &params,
+                      vector<Detection> &detections,
+                      Mat &score,
+                      float thr,
+                      float scale)
+{
+    forward(img, net, score, 0);
+
+    for (size_t r = 0; r < score.rows; r++)
     {
-        for (size_t c = 0; c  < scores[0].cols; c++)
+        for (size_t c = 0; c  < score.cols; c++)
         {
-            float response = scores[0].at<float>(r,c);
+            float response = score.at<float>(r,c);
 
             if (response > thr)
             {
@@ -693,7 +725,7 @@ void cnn::faceDet::detect(const Mat &img,
     }
 }
 
-void cnn::faceDet::calibResults(const vector<Mat> &scores, Mat &results)
+void cnn::Alg::calibResults(const vector<Mat> &scores, Mat &results)
 {
     results.create(scores.size(), 1, CV_32F);
     for (size_t k = 0; k < scores.size(); k++)
@@ -703,7 +735,7 @@ void cnn::faceDet::calibResults(const vector<Mat> &scores, Mat &results)
 }
 
 
-void cnn::faceDet::forwardDetection(const Mat &image,
+void cnn::Alg::forwardDetection(const Mat &image,
                              const vector<Detection> &detections,
                              const cnn::CNN &net,
                              const cnn::CNN &calibNet,
@@ -744,7 +776,7 @@ void cnn::faceDet::forwardDetection(const Mat &image,
     }
 }
 
-void cnn::faceDet::calibrate(const Mat &img,
+void cnn::Alg::calibrate(const Mat &img,
                       const cnn::CNN &net,
                       vector<Detection> &detections,
                       float calibThr)
@@ -760,7 +792,7 @@ void cnn::faceDet::calibrate(const Mat &img,
     }
 }
 
-void cnn::faceDet::nms(vector<Detection> &detections,
+void cnn::Alg::nms(vector<Detection> &detections,
                 const float &threshold)
 {
     sort(detections.begin(), detections.end(), [](const Detection &i, const Detection &j)
@@ -789,7 +821,7 @@ void cnn::faceDet::nms(vector<Detection> &detections,
 
 }
 
-void cnn::faceDet::backProject(vector<Detection> &detects,
+void cnn::Alg::backProject(vector<Detection> &detects,
                         const double &factor)
 {
     for (size_t i = 0 ; i < detects.size(); i++)
@@ -803,10 +835,11 @@ void cnn::faceDet::backProject(vector<Detection> &detects,
     }
 }
 
-void cnn::faceDet::displayResults(Mat &image,
+void cnn::Alg::displayResults(Mat &image,
                            vector<Detection> &detections,
                            const string wName,
-                           bool wait)
+                           bool wait,
+                           bool save)
 {
     Mat tmp = image.clone();
     for (size_t i = 0; i < detections.size(); i++)
@@ -832,7 +865,10 @@ void cnn::faceDet::displayResults(Mat &image,
 
     }
     imshow(wName, tmp);
-    //            imwrite(wName + ".jpg", tmp);
+
+    if (save)
+        imwrite(wName + ".png", tmp);
+
     if (wait)
         waitKey();
 }
