@@ -186,6 +186,64 @@ static void createCNN12(const string &filename, cnn::CNN &net)
 
     f.close();
 }
+
+static void createCNN20x16(const string &filename, cnn::CNN &net)
+{
+    ifstream f(filename, ios::in | ios::binary);
+    
+    cnn::CNNLayer module1, module2, module3, module4, module5, module6, module7;
+    
+    CNNParam params;
+    params.PadH = 1;
+    params.PadW = 1;
+    params.StrideW = 2;
+    params.StrideH = 2;
+    params.KernelH = 3;
+    params.KernelW = 3;
+    params.KernelD = 3;
+    params.NLayers = 16;
+    
+    createCONV(module1, params, f);
+    net.addLayer(module1);
+    
+    params.PadH = 1;
+    params.PadW = 1;
+    params.StrideW = 2;
+    params.StrideH = 2;
+    params.KernelH = 3;
+    params.KernelW = 3;
+    params.KernelD = 1;
+    params.NLayers = 1;
+    
+    createMAXPOOL(module2, params);     // default parameters??
+    net.addLayer(module2);
+    
+    createRELU(module3);
+    net.addLayer(module3);
+    
+    params.KernelH = 5;
+    params.KernelW = 4;
+    params.KernelD = 16;
+    params.NLayers = 16;
+    createFC(module4, params, f);
+    net.addLayer(module4);
+    
+    createRELU(module5);
+    net.addLayer(module5);
+    
+    params.KernelH = 1;
+    params.KernelW = 1;
+    params.KernelD = 16;
+    params.NLayers = 2;
+    createFC(module6, params, f);
+    net.addLayer(module6);
+    
+    createSOFTMAX(module7);
+    net.addLayer(module7);
+    
+    f.close();
+}
+
 static void createCNN12Calibration(const string &filename, cnn::CNN &net)
 {
     ifstream f(filename, ios::in | ios::binary);
@@ -536,6 +594,20 @@ static void createFaceCNNs()
     saveNet(files[5] + extXML, net48c);
 
 
+}
+
+static void createUpperBodyCNNs()
+{
+    vector<string> files = {
+        "../../../weights/20x16net.bin"
+    };
+    string extXML = ".xml";
+    
+    cnn::CNN net20x16("20x16net");
+    
+    createCNN20x16(files[0], net20x16);
+    
+    saveNet(files[0] + extXML, net20x16);
 }
 
 

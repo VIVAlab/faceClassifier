@@ -196,6 +196,7 @@ namespace cnn {
 
         static void relu(const Mat &input, Mat &output);
 
+        static void normMeanStd(const Mat &input, Mat &output, const Scalar &mean, const Scalar &stdev);
         static void normGlobal(const Mat &input, Mat &output);
 
         static void max_pool(const Mat &input, Mat &output,
