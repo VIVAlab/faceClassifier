@@ -44,7 +44,8 @@
 using namespace cv;
 using namespace std;
 
-namespace cnn {
+namespace cnn
+{
 
     struct Detection
     {
@@ -151,7 +152,6 @@ namespace cnn {
     class Op
     {
     public:
-
         static void CONV(const vector<Mat> &input,
                          const vector<Mat> &weights,
                          vector<Mat> &output,
@@ -205,10 +205,12 @@ namespace cnn {
                              int strideH = 1,
                              int paddingW = 0,
                              int paddingH = 0);
+
+        static void bgr2yuv(const Mat &input, Mat &output);
     };
 
 
-    class faceDet
+    class Alg
     {
     public:
 
@@ -217,10 +219,15 @@ namespace cnn {
                                                   const float thr);
 
         static void calibVisualize();
+        static void heatMapFromScore(const Mat &score, Mat &heatmap, Size size = Size(0,0));
+
+        static void forward(const Mat &img, const cnn::CNN &net, Mat &score, int layer = 0);
+        
         static void detect(const Mat &img,
                            const cnn::CNN &net,
                            const cnn::CNNParam &params,
                            vector<Detection> &detections,
+                           Mat &scores,
                            float thr,
                            float scale = 2.f);
 
@@ -248,9 +255,12 @@ namespace cnn {
         static void displayResults(Mat &image,
                                    vector<Detection> &detections,
                                    const string wName = "default",
-                                   bool wait = false);
+                                   bool wait = false,
+                                   bool save = false);
     };
 
+
+    
     static void writeB(ostream &fs, const CNNLayer &layer)
     {
         layer.write(fs);

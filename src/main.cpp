@@ -14,8 +14,7 @@ using namespace std;
 int main(int, char**)
 {
         // Read the model .bin files  to .xml
-        createFaceDetectionCNNs();
-
+        cnn::createFaceDetectionCNNs();
 
         /* Load networks and modules */
         vector<string> files = {
@@ -48,7 +47,7 @@ int main(int, char**)
         image.convertTo(image, CV_32F);
         image = image / 255.f;
 
-        Op::normGlobal(image, imageN);
+        cnn::Op::normGlobal(image, imageN);
 
         double winSize = 12.;
         double minFaceSize = 30;
@@ -60,12 +59,11 @@ int main(int, char**)
         cnn::CNNParam params;
         params.KernelH = 12;
         params.KernelW = 12;
-        vector<Detection> outputs;
-        vector<Detection> outputs12;
-        vector<Detection> outputs24;
-        vector<Detection> outputs48;
+        vector<cnn::Detection> outputs;
+        vector<cnn::Detection> outputs12;
+        vector<cnn::Detection> outputs24;
+        vector<cnn::Detection> outputs48;
 
-    
         std::chrono::time_point<std::chrono::system_clock> start, end;
         start = std::chrono::system_clock::now();
     
@@ -74,33 +72,37 @@ int main(int, char**)
         {
             factor = winSize/faceSize;
             resize(imageN, resized, Size(0,0), factor, factor, INTER_AREA);
-            cnn::faceDet::detect(resized, net12, params, outputs, .5f);
-            cnn::faceDet::nms(outputs, .1f);
-            cnn::faceDet::calibrate(resized, net12c, outputs, 0.1f);
-            cnn::faceDet::nms(outputs, .1f);
-            cnn::faceDet::backProject(outputs, factor);
-//            cnn::faceDet::displayResults(display, outputs, "Face Size "+ to_string((int)faceSize));
+            Mat score;
+            cnn::Alg::detect(resized, net12, params, outputs, score, .5f);
+
+//            Mat heatmap;
+//            cnn::Alg::heatMapFromScore(score, heatmap, image.size());
+//            imshow("heatmap", heatmap);
+//            waitKey();
+            
+            cnn::Alg::nms(outputs, .1f);
+            cnn::Alg::calibrate(resized, net12c, outputs, 0.1f);
+            cnn::Alg::nms(outputs, .1f);
+            cnn::Alg::backProject(outputs, factor);
+//            cnn::Alg::displayResults(display, outputs, "Face Size "+ to_string((int)faceSize));
             outputs12.insert(outputs12.end(), outputs.begin(), outputs.end());
             faceSize *= pyramidRate;
             outputs.clear();
         }
-        cnn::faceDet::displayResults(display, outputs12, "12net");
-    
+        cnn::Alg::displayResults(display, outputs12, "12net");
         params.KernelH = 24;
         params.KernelW = 24;
-        cnn::faceDet::forwardDetection(image, outputs12, net24, net24c, params, outputs24, .001f, .5f, true);
-        cnn::faceDet::nms(outputs24, .1f);
-        cnn::faceDet::displayResults(display, outputs24, "24net");
+        cnn::Alg::forwardDetection(image, outputs12, net24, net24c, params, outputs24, .001f, .5f, true);
+        cnn::Alg::nms(outputs24, .1f);
+        cnn::Alg::displayResults(display, outputs24, "24net");
     
     
         params.KernelH = 48;
         params.KernelW = 48;
-        cnn::faceDet::forwardDetection(image, outputs24, net48, net48c, params, outputs48, .99f, .5f, true);
-        cnn::faceDet::nms(outputs48, .1f);
-        cnn::faceDet::displayResults(display, outputs48, "results");
-    
-    
-    
+        cnn::Alg::forwardDetection(image, outputs24, net48, net48c, params, outputs48, .99f, .5f, true);
+        cnn::Alg::nms(outputs48, .1f);
+        cnn::Alg::displayResults(display, outputs48, "results");
+
         end = std::chrono::system_clock::now();
         std::cout << (std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()/ 1000.f) << " seconds" << std::endl;
 
