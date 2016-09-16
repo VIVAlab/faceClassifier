@@ -598,9 +598,9 @@ Detection& cnn::Alg::applyTransformationCode(Detection &detection,
         }
     }
 
-    vector<float> s = {0.83, 0.91, 1.0, 1.10, 1.21};
-    vector<float> x = {-0.17, 0.0, 0.17};
-    vector<float> y = {-0.17, 0.0, 0.17};
+    vector<float> s = {0.83f, 0.91f, 1.0f, 1.10f, 1.21f};
+    vector<float> x = {-0.17f, 0.0f, 0.17f};
+    vector<float> y = {-0.17f, 0.0f, 0.17f};
 
     float ts = 0.f, tx = 0.f, ty = 0.f;
 
@@ -635,9 +635,9 @@ void cnn::Alg::calibVisualize()
     Mat a = Mat::zeros(500,500, CV_8UC3);
     const Rect b(100, 100,100,100);
 
-    vector<float> s = {0.83, 0.91, 1.0, 1.10, 1.21};
-    vector<float> x = {-0.17, 0.0, 0.17};
-    vector<float> y = {-0.17, 0.0, 0.17};
+    vector<float> s = {0.83f, 0.91f, 1.0f, 1.10f, 1.21f};
+    vector<float> x = {-0.17f, 0.0f, 0.17f};
+    vector<float> y = {-0.17f, 0.0f, 0.17f};
 
 
     for (size_t si = 0; si < s.size(); si++)
@@ -689,7 +689,7 @@ void cnn::Alg::forward(const Mat &img, const cnn::CNN &net, Mat &score, int laye
 
 void cnn::Alg::heatMapFromScore(const Mat &score, Mat &heatmap, cv::Size size)
 {
-    if (size.width == 0 and size.height == 0)
+    if (size.width == 0 && size.height == 0)
         size = score.size();
     Mat scaled, adjusted;
     resize(score, scaled, size, 0, 0, INTER_CUBIC);
