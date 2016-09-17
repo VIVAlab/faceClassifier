@@ -16,19 +16,12 @@ int main(int, char**)
         // Read the model .bin files  to .xml
         //cnn::createCNNs();
 
-        /* Load networks and modules */
+        // Load networks and modules
         vector<string> files = {
 			"../../../weights/model_20net.bin.xml",
 			"../../../weights/model_12cnet.bin.xml",
 			"../../../weights/model_48net.bin.xml",
 			"../../../weights/model_48cnet.bin.xml",
-
-				//"../../../weights/net1/12net.bin.xml",
-				//"../../../weights/net1/12cnet.bin.xml",
-				//"../../../weights/net1/24net.bin.xml",
-				//"../../../weights/net1/24cnet.bin.xml",
-				//"../../../weights/net1/48net.bin.xml",
-				//"../../../weights/net1/48cnet.bin.xml",
 		};
 
 		cnn::CNN net20("20net");
@@ -40,24 +33,8 @@ int main(int, char**)
 		loadNet(files[2], net48);
 		loadNet(files[3], net48c);
 
-		//cnn::CNN net12("12net");
-		//cnn::CNN net12c("12cnet");
-		//cnn::CNN net24("24net");
-		//cnn::CNN net24c("24cnet");
-		//cnn::CNN net48("48net");
-		//cnn::CNN net48c("48cnet");
-		//loadNet(files[0], net12);
-		//loadNet(files[1], net12c);
-		//loadNet(files[2], net24);
-		//loadNet(files[3], net24c);
-		//loadNet(files[4], net48);
-		//loadNet(files[5], net48c);
-
-        //cnn::CNN net("net");
-        //loadNet(files[0], net);
-
-        /* testing image for face detection */
-        string imageFilename = "../../../test/img/group1.jpg";
+        // Load image for face detection
+        string imageFilename = "../../../test/img/group4.jpg";
         Mat display = imread(imageFilename);
         Mat image = imread(imageFilename, IMREAD_GRAYSCALE), imageN, resized;
 
@@ -67,7 +44,6 @@ int main(int, char**)
         cnn::Op::normGlobal(image, imageN);
 
         double winSize = 20.;
-        //double winSize = 12.;
         double minFaceSize = 30;
         double maxFaceSize = 180;
         double pyramidRate = sqrt(2.0);
@@ -82,13 +58,6 @@ int main(int, char**)
 		vector<cnn::Detection> outputs12;
 		vector<cnn::Detection> outputs48;
 
-  //      params.KernelH = 12;
-  //      params.KernelW = 12;
-  //      vector<cnn::Detection> outputs;
-  //      vector<cnn::Detection> outputs12;
-		//vector<cnn::Detection> outputs24;
-		//vector<cnn::Detection> outputs48;
-
         std::chrono::time_point<std::chrono::system_clock> start, end;
         start = std::chrono::system_clock::now();
     
@@ -99,32 +68,30 @@ int main(int, char**)
             resize(imageN, resized, Size(0,0), factor, factor, INTER_AREA);
             Mat score;
 
-			cnn::Alg::detect(resized, net20, params, outputs, score, .5f);
-			cnn::Alg::nms(outputs, .1f);
-			cnn::Alg::calibrate(resized, net12c, outputs, 0.1f);
-			cnn::Alg::nms(outputs, .1f);
+			//cnn::Alg::detect(resized, net20, params, outputs, score, .5f);
+			//cnn::Alg::nms(outputs, .1f);
+			//cnn::Alg::calibrate(resized, net12c, outputs, 0.1f);
+			//cnn::Alg::nms(outputs, .1f);
+			//cnn::Alg::backProject(outputs, factor);
+			////cnn::Alg::displayResults(display, outputs, "Face Size "+ to_string((int)faceSize));
+			//outputs12.insert(outputs12.end(), outputs.begin(), outputs.end());
+
+            cnn::Alg::detect(resized, net20, params, outputs, score, .5f);
+
+            Mat heatmap;
+            cnn::Alg::heatMapFromScore(score, heatmap, image.size());
+			cnn::Alg::displayResults(resized, outputs, "12net_resized");
 			cnn::Alg::backProject(outputs, factor);
-			//cnn::Alg::displayResults(display, outputs, "Face Size "+ to_string((int)faceSize));
+			cnn::Alg::displayResults(display, outputs, "12net");
 			outputs12.insert(outputs12.end(), outputs.begin(), outputs.end());
-
-            //cnn::Alg::detect(resized, net20, params, outputs, score, .5f);
-
-            //Mat heatmap;
-            //cnn::Alg::heatMapFromScore(score, heatmap, image.size());
-            //imshow("heatmap", heatmap);
-            //waitKey();
+            imshow("heatmap", heatmap);
+            waitKey();
 
             faceSize *= pyramidRate;
             outputs.clear();
         }
 
 		cnn::Alg::displayResults(display, outputs12, "12net");
-
-		//params.KernelH = 24;
-		//params.KernelW = 24;
-		//cnn::Alg::forwardDetection(image, outputs12, net24, net24c, params, outputs24, .001f, .5f, true);
-		//cnn::Alg::nms(outputs24, .1f);
-		//cnn::Alg::displayResults(display, outputs24, "24net");
 
 		//params.KernelH = 48;
 		//params.KernelW = 48;
