@@ -68,23 +68,23 @@ int main(int, char**)
             resize(imageN, resized, Size(0,0), factor, factor, INTER_AREA);
             Mat score;
 
-//			cnn::Alg::detect(resized, net20, params, outputs, score, .5f, 4.2f);
-//			cnn::Alg::nms(outputs, .1f);
-//			cnn::Alg::calibrate(resized, net12c, outputs, 0.1f);
-//            cnn::Alg::nms(outputs, .1f);
-//			cnn::Alg::backProject(outputs, factor);
-//			//cnn::Alg::displayResults(display, outputs, "Face Size "+ to_string((int)faceSize));
-//			outputs12.insert(outputs12.end(), outputs.begin(), outputs.end());
-
-            cnn::Alg::detect(resized, net20, params, outputs, score, .5f, 4.2f);
-            Mat heatmap;
-            cnn::Alg::heatMapFromScore(score, heatmap, image.size());
-			cnn::Alg::displayResults(resized, outputs, "12net_resized");
+			cnn::Alg::detect(resized, net20, params, outputs, score, .5f, 4.f);
+			cnn::Alg::nms(outputs, .1f);
+			cnn::Alg::calibrate(resized, net12c, outputs, 0.1f);
+            cnn::Alg::nms(outputs, .1f);
 			cnn::Alg::backProject(outputs, factor);
-			cnn::Alg::displayResults(display, outputs, "12net");
+			//cnn::Alg::displayResults(display, outputs, "Face Size "+ to_string((int)faceSize));
 			outputs12.insert(outputs12.end(), outputs.begin(), outputs.end());
-            imshow("heatmap", heatmap);
-            waitKey();
+
+//            cnn::Alg::detect(resized, net20, params, outputs, score, .5f, 4.f);
+//            Mat heatmap;
+//            cnn::Alg::heatMapFromScore(score, heatmap, image.size());
+//			cnn::Alg::displayResults(resized, outputs, "12net_resized");
+//			cnn::Alg::backProject(outputs, factor);
+//			cnn::Alg::displayResults(display, outputs, "12net");
+//			outputs12.insert(outputs12.end(), outputs.begin(), outputs.end());
+//            imshow("heatmap", heatmap);
+//            waitKey();
 
             faceSize *= pyramidRate;
             outputs.clear();

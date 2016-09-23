@@ -32,3 +32,6 @@
 *.dSYM/
 src/build
 src2/build
+
+# XML
+*.xml
