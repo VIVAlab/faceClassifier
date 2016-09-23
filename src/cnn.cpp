@@ -715,7 +715,7 @@ void cnn::Alg::detect(const Mat &img,
 
             if (response > thr)
             {
-                Rect face(c * scale, r * scale, params.KernelW, params.KernelH );
+                Rect face(c * scale, r * scale, params.KernelW, params.KernelH );   // Scale should probably be different for c and r??
                 Detection det;
                 det.face = face;
                 det.score = response;

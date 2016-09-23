@@ -495,6 +495,10 @@ namespace cnn
 		createMAXPOOL(module6, params);
 		net.addLayer(module6);
 
+        params.PadH = 0;
+        params.PadW = 0;
+        params.StrideW = 1;
+        params.StrideH = 1;
 		params.KernelH = 3;
 		params.KernelW = 3;
 		params.KernelD = 32;

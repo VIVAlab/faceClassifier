@@ -14,7 +14,7 @@ using namespace std;
 int main(int, char**)
 {
         // Read the model .bin files  to .xml
-        //cnn::createCNNs();
+//        cnn::createCNNs();
 
         // Load networks and modules
         vector<string> files = {
@@ -34,7 +34,7 @@ int main(int, char**)
 		loadNet(files[3], net48c);
 
         // Load image for face detection
-        string imageFilename = "../../../test/img/group4.jpg";
+        string imageFilename = "../../../test/img/group1.jpg";
         Mat display = imread(imageFilename);
         Mat image = imread(imageFilename, IMREAD_GRAYSCALE), imageN, resized;
 
@@ -44,8 +44,8 @@ int main(int, char**)
         cnn::Op::normGlobal(image, imageN);
 
         double winSize = 20.;
-        double minFaceSize = 30;
-        double maxFaceSize = 180;
+        double minFaceSize = 30.;
+        double maxFaceSize = 180.;
         double pyramidRate = sqrt(2.0);
         double faceSize = minFaceSize;
         double factor;
@@ -68,16 +68,15 @@ int main(int, char**)
             resize(imageN, resized, Size(0,0), factor, factor, INTER_AREA);
             Mat score;
 
-			//cnn::Alg::detect(resized, net20, params, outputs, score, .5f);
-			//cnn::Alg::nms(outputs, .1f);
-			//cnn::Alg::calibrate(resized, net12c, outputs, 0.1f);
-			//cnn::Alg::nms(outputs, .1f);
-			//cnn::Alg::backProject(outputs, factor);
-			////cnn::Alg::displayResults(display, outputs, "Face Size "+ to_string((int)faceSize));
-			//outputs12.insert(outputs12.end(), outputs.begin(), outputs.end());
+//			cnn::Alg::detect(resized, net20, params, outputs, score, .5f, 4.2f);
+//			cnn::Alg::nms(outputs, .1f);
+//			cnn::Alg::calibrate(resized, net12c, outputs, 0.1f);
+//            cnn::Alg::nms(outputs, .1f);
+//			cnn::Alg::backProject(outputs, factor);
+//			//cnn::Alg::displayResults(display, outputs, "Face Size "+ to_string((int)faceSize));
+//			outputs12.insert(outputs12.end(), outputs.begin(), outputs.end());
 
-            cnn::Alg::detect(resized, net20, params, outputs, score, .5f);
-
+            cnn::Alg::detect(resized, net20, params, outputs, score, .5f, 4.2f);
             Mat heatmap;
             cnn::Alg::heatMapFromScore(score, heatmap, image.size());
 			cnn::Alg::displayResults(resized, outputs, "12net_resized");
@@ -93,12 +92,11 @@ int main(int, char**)
 
 		cnn::Alg::displayResults(display, outputs12, "12net");
 
-		//params.KernelH = 48;
-		//params.KernelW = 48;
-		//cnn::Alg::forwardDetection(image, outputs12, net48, net48c, params, outputs48, .99f, .5f, true);
-		////cnn::Alg::forwardDetection(image, outputs24, net48, net48c, params, outputs48, .99f, .5f, true);
-		//cnn::Alg::nms(outputs48, .1f);
-		//cnn::Alg::displayResults(display, outputs48, "results");
+//		params.KernelH = 48;
+//		params.KernelW = 48;
+//		cnn::Alg::forwardDetection(image, outputs12, net48, net48c, params, outputs48, .5f, .5f, true);
+//		cnn::Alg::nms(outputs48, .1f);
+//		cnn::Alg::displayResults(display, outputs48, "results");
 
         end = std::chrono::system_clock::now();
         std::cout << (std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()/ 1000.f) << " seconds" << std::endl;
