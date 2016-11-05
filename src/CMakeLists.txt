@@ -1,13 +1,15 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 
-SET(PROJECT_NAME "opencv")
+SET(PROJECT_NAME "cascade")
 PROJECT("${PROJECT_NAME}")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
+set(OpenCV_DIR "/home/binghao/software/opencv-3.1.0/build")
 
 # add opencv package to the project
 FIND_PACKAGE( OpenCV REQUIRED )
 
-#SET(OpenCV_INCLUDE_DIRS "/usr/local/Cellar/opencv3/3.1.0_1/include/opencv;/usr/local/Cellar/opencv3/3.1.0_1/include" )
+SET(OpenCV_INCLUDE_DIRS "/home/binghao/software/opencv-3.1.0/include;/home/binghao/software/opencv-3.1.0/include/opencv" )
 INCLUDE_DIRECTORIES( ${OpenCV_INCLUDE_DIRS} )
 
 MESSAGE(STATUS "Project Name: ${PROJECT_NAME}")

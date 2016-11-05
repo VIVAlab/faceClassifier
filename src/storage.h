@@ -738,11 +738,21 @@ namespace cnn
 
     static void createCNNs()
     {
+    	#ifndef OnLinux
         vector<string> files = {
 			"../../../weights/model_20net.bin",
 			"../../../weights/model_12cnet.bin",
 			"../../../weights/model_48net.bin",
 			"../../../weights/model_48cnet.bin",
+		#endif
+
+		#ifdef OnLinux
+        vector<string> files = {
+			"../../weights/model_20net.bin",
+			"../../weights/model_12cnet.bin",
+			"../../weights/model_48net.bin",
+			"../../weights/model_48cnet.bin",
+		#endif
 
             //"../../../weights/12net.bin",
             //"../../../weights/12cnet.bin",

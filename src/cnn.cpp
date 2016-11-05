@@ -1,6 +1,3 @@
-
-
-
 /**************************************************************************************************
  **************************************************************************************************
  
@@ -113,6 +110,7 @@ void CNNLayer::write(FileStorage &fs) const
     fs <<"}";
     
 }
+
 void CNNLayer::write(ostream &f) const
 {
     cv::writeB(f, type);
@@ -171,7 +169,6 @@ void CNNLayer::read(const FileNode& node)
     }
     
 }
-
 
 void CNN::forward(const Mat &input, vector<Mat> &output) const
 {
@@ -318,8 +315,6 @@ void CNN::read(const FileNode &node)
         }
     }
 }
-
-
 
 ostream& cnn::operator<<(ostream &out, const CNNLayer& w)
 {
